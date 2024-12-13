@@ -3,6 +3,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { CreateUserDto } from './dto/create-user.dto';
 import { User } from './entities/user.entities';
+import { UpdateUserDto } from './dto/update-user.dto';
 
 @Injectable()
 export class UserService {
@@ -55,27 +56,29 @@ export class UserService {
      * @param updateUserDto this is partial type of createUserDto.
      * @returns promise of udpate user
      */
-    //   updateUser(id: number, updateUserDto: UpdateUserDto): Promise<User> {
-    //     const user: User = new User();
-    //     user.name = updateUserDto.name;
-    //     user.age = updateUserDto.age;
-    //     user.email = updateUserDto.email;
-    //     user.username = updateUserDto.username;
-    //     user.password = updateUserDto.password;
-    //     user.id = id;
-    //     return this.userRepository.save(user);
-    //   }
+    updateUser(id: number, updateUserDto: UpdateUserDto): Promise<User> {
+        const user: User = new User();
+        user.name = updateUserDto.name;
+        user.age = updateUserDto.age;
+        user.email = updateUserDto.email;
+        user.username = updateUserDto.username;
+        user.password = updateUserDto.password;
+        user.id = id;
+        return this.userRepository.save(user);
+    }
 
     /**
      * this function is used to remove or delete user from database.
      * @param id is the type of number, which represent id of user
      * @returns nuber of rows deleted or affected
      */
-    //   removeUser(id: number): Promise<{ affected?: number }> {
-    //     return this.userRepository.delete(id);
-    //   }
+      removeUser(id: number): Promise<{ affected?: number }> {
+        return this.userRepository.delete(id);
+      }
 
-    async findByEmail(email: string): Promise<User | null> {
-        return this.userRepository.findOne({ where: { email } })
+    async findByEmail(email: string): Promise<User> {
+        console.log(email);
+        const user = await this.userRepository.findOneBy({ email });
+        return user ?? null;
     }
 }

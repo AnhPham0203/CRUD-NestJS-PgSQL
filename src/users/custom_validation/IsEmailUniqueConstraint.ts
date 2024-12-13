@@ -11,6 +11,8 @@ export class IsEmailUniqueConstraint implements ValidatorConstraintInterface {
     ) { }
 
     async validate(value: string, args: ValidationArguments): Promise<boolean> {
+        console.log("Stest===",value);
+        
         // Kiểm tra trong cơ sở dữ liệu nếu email đã tồn tại
         const user = await this.userService.findByEmail(value);
         return !user;  // Nếu có user trả về null, nghĩa là email chưa trùng
