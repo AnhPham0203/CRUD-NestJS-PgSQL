@@ -1,4 +1,10 @@
-import { IsString, IsEmail, IsOptional, MinLength, IsInt, Min } from 'class-validator';
+import {
+  IsString,
+  IsOptional,
+  IsInt,
+  Min,
+  IsEnum,
+} from 'class-validator';
 
 export class UpdateUserDto {
   @IsOptional()
@@ -10,9 +16,6 @@ export class UpdateUserDto {
   @Min(0)
   readonly age?: number;
 
-  @IsOptional()
-  @IsEmail()
-  readonly email?: string;
 
   @IsOptional()
   @IsString()
@@ -20,6 +23,8 @@ export class UpdateUserDto {
 
   @IsOptional()
   @IsString()
-  @MinLength(6)
-  readonly password?: string;
+  @IsEnum(['f', 'm', 'u'], { message: 'Gender must be one of f, m, or u.' })
+  readonly gender: string;
+
+  
 }

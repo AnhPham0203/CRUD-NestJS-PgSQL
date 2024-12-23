@@ -3,11 +3,11 @@ import { UsersController } from './users.controller';
 import { UserService } from './users.service';
 import { User } from './entities/user.entities';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { IsEmailUniqueConstraint } from './custom_validation/IsEmailUniqueConstraint';
+// import { IsEmailUniqueConstraint } from './custom_validation/IsEmailUniqueConstraint';
 
 @Module({
   imports: [TypeOrmModule.forFeature([User])],
   controllers: [UsersController],
-  providers: [UserService, IsEmailUniqueConstraint]
+  providers: [UserService],
 })
-export class UsersModule { }
+export class UsersModule {}
