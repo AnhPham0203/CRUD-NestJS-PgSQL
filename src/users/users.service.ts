@@ -1,4 +1,4 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
+import { BadRequestException, HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { CreateUserDto } from './dto/create-user.dto';
@@ -55,6 +55,7 @@ export class UserService {
 
   async findByEmail (email: string) : Promise<User | null>  {
     const user= await this.userRepository.findOne({where : {email:email}})
+    if(!user) return null;
     return user
   }
   
@@ -65,8 +66,17 @@ export class UserService {
   }
 
   
-  removeUser(id: number): Promise<{ affected?: number }> {
-    return this.userRepository.delete(id);
+ async removeUser(id: number): Promise<{ message: string }> {
+    const user = await this.userRepository.findOne({where : {id}})
+    if(!user){
+      throw new HttpException(
+        `User with id ${id} does not exist.`,
+        HttpStatus.NOT_FOUND,
+      );
+    }
+    await this.userRepository.delete(id);
+
+    return { message: `User with id ${id} deleted successfully.` };
   }
 
   

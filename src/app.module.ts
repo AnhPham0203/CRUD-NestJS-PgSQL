@@ -5,6 +5,7 @@ import { AppService } from './app.service';
 import { UsersModule } from './users/users.module';
 import { User } from './users/entities/user.entities';
 import { AuthModule } from './auth/auth.module';
+import { MailModule } from './mail/mail.module';
 
 @Module({
   imports: [
@@ -19,7 +20,8 @@ import { AuthModule } from './auth/auth.module';
       synchronize: true, // Tự động đồng bộ schema (Chỉ nên dùng ở môi trường dev)
     }),
     UsersModule,
-    AuthModule, // Module xử lý logic liên quan
+    AuthModule,
+    MailModule, // Module xử lý logic liên quan
   ],
   controllers: [AppController],
   providers: [AppService],
