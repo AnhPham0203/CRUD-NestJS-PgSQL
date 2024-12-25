@@ -6,24 +6,29 @@ import { UsersModule } from './users/users.module';
 import { User } from './users/entities/user.entities';
 import { AuthModule } from './auth/auth.module';
 import { MailModule } from './mail/mail.module';
+import { ConfigModule, ConfigService } from '@nestjs/config';
+import typeorm from './config/typeorm';
+import { APP_GUARD } from '@nestjs/core';
+import { RolesGuard } from './auth/guards/roles.guard';
 
 @Module({
   imports: [
-    TypeOrmModule.forRoot({
-      type: 'postgres',
-      host: 'localhost', // Địa chỉ máy chủ PostgreSQL
-      port: 5432, // Cổng mặc định của PostgreSQL
-      username: 'postgres', // Tên người dùng PostgreSQL
-      password: 'anhpham0203', // Mật khẩu
-      database: 'pgWithNest', // Tên cơ sở dữ liệu
-      entities: [User], // Các Entity của bạn
-      synchronize: true, // Tự động đồng bộ schema (Chỉ nên dùng ở môi trường dev)
+    ConfigModule.forRoot({
+      isGlobal: true,
+      load: [typeorm]
+    }),
+    TypeOrmModule.forRootAsync({
+      inject: [ConfigService],
+      useFactory: async (configService: ConfigService) => (configService.get('typeorm'))
     }),
     UsersModule,
     AuthModule,
     MailModule, // Module xử lý logic liên quan
   ],
   controllers: [AppController],
-  providers: [AppService],
+  providers: [AppService, {
+    provide: APP_GUARD,
+    useClass: RolesGuard,
+  },],
 })
-export class AppModule {}
+export class AppModule { }

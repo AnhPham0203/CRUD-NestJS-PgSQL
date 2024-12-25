@@ -7,16 +7,20 @@ import {
   Patch,
   Post,
   Req,
+  UseGuards,
 } from '@nestjs/common';
-import { CreateUserDto } from './dto/create-user.dto';
 import { UserService } from './users.service';
-import { UpdateUserDto } from './dto/update-user.dto';
+import { CreateUserDto } from './dto/request/create-user.dto';
+import { UpdateUserDto } from './dto/request/update-user.dto';
+import { Role } from 'src/auth/decorators/roles.decorator';
+import { JwtAuthGuard } from 'src/auth/guards/jwt.guard';
+import { RolesGuard } from 'src/auth/guards/roles.guard';
 // import { Request } from 'express';
 
 
 @Controller('users')
 export class UsersController {
-  constructor(private readonly userService: UserService) {}
+  constructor(private readonly userService: UserService) { }
 
   /**
    * Post decorator represents method of request as we have used post decorator the method
@@ -31,7 +35,13 @@ export class UsersController {
     return await this.userService.createUser(createUserDto);
   }
 
-  
+  @Get('admin')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Role('ADMIN') // Chỉ vai trò 'admin' mới truy cập được
+  getAdminData() {
+    
+    return { message: 'This is admin data' };
+  }
 
   /**
    * we have used get decorator to get all the user's list
@@ -39,8 +49,8 @@ export class UsersController {
    * GET http://localhost:3000/users
    */
   @Get()
-  findAll(@Req() request: Request ) {
-    
+  findAll(@Req() request: Request) {
+
     return this.userService.findAllUser();
   }
 
@@ -51,9 +61,11 @@ export class UsersController {
    */
   @Get(':id')
   findOne(@Param('id') id: string) {
-    
-    return this.userService.viewUser(+id);
+    const userId = Number(id);
+    return this.userService.viewUser(userId);
   }
+
+  
 
   /**
    * we have used patch decorator with id param to get id from request
@@ -74,5 +86,7 @@ export class UsersController {
   remove(@Param('id') id: string) {
     return this.userService.removeUser(+id);
   }
-  
+
+  // test rolead
+ 
 }

@@ -29,4 +29,7 @@ export class User {
    * u - unspecified
    */
   gender: string;
+
+  @Column({type: 'varchar', length: 10})
+  role : string;
 }

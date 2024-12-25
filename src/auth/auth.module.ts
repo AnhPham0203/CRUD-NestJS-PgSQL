@@ -6,9 +6,11 @@ import { jwtConstants } from './constants';
 import { UsersModule } from 'src/users/users.module';
 import { PassportModule } from '@nestjs/passport';
 import { LocalStrategy } from './local.strategy';
+import { JwtStrategy } from './strategies/jwt.strategy';
+import { JwtAuthGuard } from './guards/jwt.guard';
 
 @Module({
-  imports : [UsersModule, PassportModule,
+  imports: [UsersModule, PassportModule,
     JwtModule.register({
       global: true,
       secret: jwtConstants.secret,
@@ -17,7 +19,7 @@ import { LocalStrategy } from './local.strategy';
 
   ],
   controllers: [AuthController],
-  providers: [AuthService, LocalStrategy],
-  
+  providers: [AuthService, JwtStrategy, JwtAuthGuard],
+
 })
-export class AuthModule {}
+export class AuthModule { }
