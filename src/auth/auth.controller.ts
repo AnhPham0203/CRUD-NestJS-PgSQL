@@ -21,5 +21,15 @@ export class AuthController {
     return "send email ok1"
   }
 
+  @Post('forgot-password')
+  async forgotPassword(@Body('email') email: string) {
+    return await this.authService.sendResetPasswordEmail(email);
+  }
+
+  @Post('reset-password')
+  async resetPassword(@Body() resetPasswordDto: { token: string; newPassword: string }) {
+    return await this.authService.resetPassword(resetPasswordDto.token, resetPasswordDto.newPassword);
+  }
+
 
 }

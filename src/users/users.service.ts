@@ -7,6 +7,7 @@ import { plainToClass, plainToInstance } from 'class-transformer';
 import { UserResponeDto } from './dto/response/user.responseDto';
 import { CreateUserDto } from './dto/request/create-user.dto';
 import { UpdateUserDto } from './dto/request/update-user.dto';
+const bcrypt = require('bcrypt');
 
 @Injectable()
 export class UserService {
@@ -97,5 +98,22 @@ export class UserService {
     return { message: `User with id ${id} deleted successfully.` };
   }
 
+
+  async updatePassword(userId: number, newPassword: string) {
+    // Tìm user bằng userId
+    const user = await this.userRepository.findOneBy({ id: userId });
+    if (!user) {
+      throw new Error('User not found'); // Hoặc bạn có thể dùng HttpException nếu đây là ứng dụng web
+    }
+  
+    // Mã hóa mật khẩu mới
+    const hashedPassword = await bcrypt.hash(newPassword, 10);
+  
+    // Cập nhật mật khẩu
+    user.password = hashedPassword;
+  
+    // Lưu lại vào database
+    await this.userRepository.save(user);
+  }
 
 }
