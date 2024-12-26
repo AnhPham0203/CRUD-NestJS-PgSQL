@@ -8,6 +8,12 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
   constructor() {
     super({
       jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
+      // jwtFromRequest: (req) => {
+      //   console.log('Request Headers:', req.headers);
+      //   const token = ExtractJwt.fromAuthHeaderAsBearerToken()(req);
+      //   console.log('Extracted JWT:', token);
+      //   return token;
+      // },
       ignoreExpiration: false,
       secretOrKey: jwtConstants.secret,
     });
@@ -15,7 +21,9 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
 
 
   async validate(payload: any) {
-    console.log('Payload:', payload);
-    return { sub: payload.id, username: payload.username, role: payload.role };
+    console.log("ádas",payload);
+    
+    return { sub: payload.sub, username: payload.username, role: payload.role }; // Gán thông tin vào return
+    
   }
 }

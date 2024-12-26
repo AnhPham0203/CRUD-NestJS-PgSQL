@@ -12,9 +12,10 @@ import {
 import { UserService } from './users.service';
 import { CreateUserDto } from './dto/request/create-user.dto';
 import { UpdateUserDto } from './dto/request/update-user.dto';
-import { Role } from 'src/auth/decorators/roles.decorator';
+import { Roles } from 'src/auth/decorators/roles.decorator';
 import { JwtAuthGuard } from 'src/auth/guards/jwt.guard';
 import { RolesGuard } from 'src/auth/guards/roles.guard';
+import { Role } from 'src/auth/enums/role.enum';
 // import { Request } from 'express';
 
 
@@ -37,10 +38,18 @@ export class UsersController {
 
   @Get('admin')
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @Role('ADMIN') // Chỉ vai trò 'admin' mới truy cập được
+  @Roles(Role.ADMIN) // Chỉ vai trò 'admin' mới truy cập được
   getAdminData() {
-    
+
     return { message: 'This is admin data' };
+  }
+
+  @Get('user')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(Role.USER) // Chỉ vai trò 'user' mới truy cập được
+  getUserata() {
+
+    return { message: 'This is user data' };
   }
 
   /**
@@ -65,7 +74,7 @@ export class UsersController {
     return this.userService.viewUser(userId);
   }
 
-  
+
 
   /**
    * we have used patch decorator with id param to get id from request
@@ -88,5 +97,5 @@ export class UsersController {
   }
 
   // test rolead
- 
+
 }

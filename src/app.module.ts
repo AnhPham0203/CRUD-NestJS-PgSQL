@@ -9,7 +9,7 @@ import { MailModule } from './mail/mail.module';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import typeorm from './config/typeorm';
 import { APP_GUARD } from '@nestjs/core';
-import { RolesGuard } from './auth/guards/roles.guard';
+// import { RolesGuard } from './auth/guards/roles.guard';
 
 @Module({
   imports: [
@@ -26,9 +26,11 @@ import { RolesGuard } from './auth/guards/roles.guard';
     MailModule, // Module xử lý logic liên quan
   ],
   controllers: [AppController],
-  providers: [AppService, {
-    provide: APP_GUARD,
-    useClass: RolesGuard,
-  },],
+  providers: [AppService, 
+  //   {
+  //   provide: APP_GUARD,
+  //   useClass: RolesGuard,
+  // },
+],
 })
 export class AppModule { }
