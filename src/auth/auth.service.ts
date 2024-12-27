@@ -1,26 +1,17 @@
 
-<<<<<<< HEAD
-import { Injectable, NotFoundException, UnauthorizedException } from '@nestjs/common';
-=======
-import { Body, HttpException, HttpStatus, Injectable, Post, UnauthorizedException } from '@nestjs/common';
->>>>>>> 50232f7b693783da4eb37ec1b459ef976a94ed35
+import { HttpException, HttpStatus, Injectable, NotFoundException, UnauthorizedException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { compareHashPasswordHelper } from 'src/helpers/util';
 import { MailService } from 'src/mail/mail.service';
 import { UserService } from 'src/users/users.service';
+
 const bcrypt = require('bcrypt');
 
 @Injectable()
 export class AuthService {
-<<<<<<< HEAD
-  constructor(private usersService: UserService,
-    private jwtService: JwtService,
-    private readonly mailService: MailService
-=======
   constructor(private userService: UserService,
     private jwtService: JwtService,
-    private mailSevice: MailService,
->>>>>>> 50232f7b693783da4eb37ec1b459ef976a94ed35
+    private mailSevice: MailService
   ) { }
 
   async validateUser(username: string, pass: string): Promise<any> {
@@ -32,6 +23,7 @@ export class AuthService {
     return user;
 
   }
+
 
 
   async signIn(email: string, pass: string): Promise<any> {
@@ -48,9 +40,6 @@ export class AuthService {
     };
   }
 
-<<<<<<< HEAD
- 
-=======
   async sendResetPasswordEmail(email: string) {
     const user = await this.userService.findByEmail(email);
     if (!user) {
@@ -62,7 +51,7 @@ export class AuthService {
     // Gửi email 
     this.mailSevice.sendMailRePassword(token)
 
-    return { message: 'Reset password link has been sent to your email.' };
+    return { message: 'The code to reset the password has been sent to your email.' };
   }
 
   async resetPassword(token: string, newPassword: string) {
@@ -73,15 +62,13 @@ export class AuthService {
         throw new HttpException('Invalid token', HttpStatus.UNAUTHORIZED);
       }
 
-      const hashedPassword = await bcrypt.hash(newPassword, 10);
-      
-      await this.userService.updatePassword(user.id, hashedPassword);
+      // const hashedPassword = await bcrypt.hash(newPassword, 10);
+
+      await this.userService.updatePassword(user.id, newPassword);
 
       return { message: 'Password has been updated successfully.' };
     } catch (err) {
       throw new HttpException('Invalid or expired token', HttpStatus.UNAUTHORIZED);
     }
   }
-  
->>>>>>> 50232f7b693783da4eb37ec1b459ef976a94ed35
 }

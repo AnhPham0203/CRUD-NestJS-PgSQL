@@ -11,6 +11,8 @@ export class AuthController {
 
   @Post('login')
   create(@Body() createAuthDto: CreateAuthDto) {
+    console.log("======", createAuthDto);
+    // return "ok"
     return this.authService.signIn(createAuthDto.email, createAuthDto.password)
   }
 

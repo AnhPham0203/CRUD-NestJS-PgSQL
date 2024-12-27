@@ -6,7 +6,7 @@ import { MailerService } from '@nestjs-modules/mailer';
 export class MailService {
   jwtService: any;
   configService: any;
-  constructor(private readonly mailerService: MailerService, private readonly userService: UserService) { }
+  constructor(private readonly mailerService: MailerService) { }
 
   public example(): void {
     this.mailerService
@@ -27,9 +27,6 @@ export class MailService {
 
   }
 
-<<<<<<< HEAD
-
-=======
   public sendMailRePassword(token : string): void {
     this.mailerService
       .sendMail({
@@ -48,5 +45,5 @@ export class MailService {
       .catch(() => { });
 
   }
->>>>>>> 50232f7b693783da4eb37ec1b459ef976a94ed35
+
 }
