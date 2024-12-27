@@ -1,19 +1,30 @@
 
+<<<<<<< HEAD
 import { Injectable, NotFoundException, UnauthorizedException } from '@nestjs/common';
+=======
+import { Body, HttpException, HttpStatus, Injectable, Post, UnauthorizedException } from '@nestjs/common';
+>>>>>>> 50232f7b693783da4eb37ec1b459ef976a94ed35
 import { JwtService } from '@nestjs/jwt';
 import { compareHashPasswordHelper } from 'src/helpers/util';
 import { MailService } from 'src/mail/mail.service';
 import { UserService } from 'src/users/users.service';
+const bcrypt = require('bcrypt');
 
 @Injectable()
 export class AuthService {
+<<<<<<< HEAD
   constructor(private usersService: UserService,
     private jwtService: JwtService,
     private readonly mailService: MailService
+=======
+  constructor(private userService: UserService,
+    private jwtService: JwtService,
+    private mailSevice: MailService,
+>>>>>>> 50232f7b693783da4eb37ec1b459ef976a94ed35
   ) { }
 
   async validateUser(username: string, pass: string): Promise<any> {
-    const user = await this.usersService.findByEmail(username);
+    const user = await this.userService.findByEmail(username);
     const isValidPassword = await compareHashPasswordHelper(pass, user.password)
 
     if (!isValidPassword) return null;
@@ -24,7 +35,7 @@ export class AuthService {
 
 
   async signIn(email: string, pass: string): Promise<any> {
-    const user = await this.usersService.findByEmail(email);
+    const user = await this.userService.findByEmail(email);
     const isValidPassword = await compareHashPasswordHelper(pass, user.password)
 
 
@@ -37,5 +48,40 @@ export class AuthService {
     };
   }
 
+<<<<<<< HEAD
  
+=======
+  async sendResetPasswordEmail(email: string) {
+    const user = await this.userService.findByEmail(email);
+    if (!user) {
+      throw new HttpException('Email not found', HttpStatus.NOT_FOUND);
+    }
+
+    const token = this.jwtService.sign({ email }, { expiresIn: '15m' }); // Token hết hạn sau 15 phút
+
+    // Gửi email 
+    this.mailSevice.sendMailRePassword(token)
+
+    return { message: 'Reset password link has been sent to your email.' };
+  }
+
+  async resetPassword(token: string, newPassword: string) {
+    try {
+      const payload = this.jwtService.verify(token);
+      const user = await this.userService.findByEmail(payload.email);
+      if (!user) {
+        throw new HttpException('Invalid token', HttpStatus.UNAUTHORIZED);
+      }
+
+      const hashedPassword = await bcrypt.hash(newPassword, 10);
+      
+      await this.userService.updatePassword(user.id, hashedPassword);
+
+      return { message: 'Password has been updated successfully.' };
+    } catch (err) {
+      throw new HttpException('Invalid or expired token', HttpStatus.UNAUTHORIZED);
+    }
+  }
+  
+>>>>>>> 50232f7b693783da4eb37ec1b459ef976a94ed35
 }

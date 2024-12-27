@@ -1,6 +1,5 @@
 import { registerAs } from "@nestjs/config";
 import { config as dotenvConfig } from 'dotenv';
-import { User } from "src/users/entities/user.entities";
 import { DataSource, DataSourceOptions } from "typeorm";
 
 dotenvConfig({ path: '.env' });
