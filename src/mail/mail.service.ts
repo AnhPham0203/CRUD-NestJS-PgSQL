@@ -1,9 +1,12 @@
+import { UserService } from './../users/users.service';
 import { Injectable } from '@nestjs/common';
 import { MailerService } from '@nestjs-modules/mailer';
 
 @Injectable()
 export class MailService {
-  constructor(private readonly mailerService: MailerService) { }
+  jwtService: any;
+  configService: any;
+  constructor(private readonly mailerService: MailerService, private readonly userService: UserService) { }
 
   public example(): void {
     this.mailerService
@@ -23,4 +26,6 @@ export class MailService {
       .catch(() => { });
 
   }
+
+
 }
