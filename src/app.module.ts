@@ -9,6 +9,7 @@ import { MailModule } from './mail/mail.module';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import typeorm from './config/typeorm';
 import { APP_GUARD } from '@nestjs/core';
+import { RolesGuard } from './auth/guards/roles.guard';
 // import { RolesGuard } from './auth/guards/roles.guard';
 
 @Module({

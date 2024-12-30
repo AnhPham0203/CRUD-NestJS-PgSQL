@@ -7,6 +7,8 @@ import { plainToClass, plainToInstance } from 'class-transformer';
 import { UserResponeDto } from './dto/response/user.responseDto';
 import { CreateUserDto } from './dto/request/create-user.dto';
 import { UpdateUserDto } from './dto/request/update-user.dto';
+import { MailService } from 'src/mail/mail.service';
+import { v4 as uuidv4 } from 'uuid';
 const bcrypt = require('bcrypt');
 
 @Injectable()
@@ -15,8 +17,10 @@ export class UserService {
    * Here, we have used data mapper approch for this tutorial that is why we
    * injecting repository here. Another approch can be Active records.
    */
+  private verificationCodes = new Map<string, CreateUserDto>();
   constructor(
     @InjectRepository(User) private readonly userRepository: Repository<User>,
+    private mailService: MailService
   ) { }
 
 
@@ -25,8 +29,9 @@ export class UserService {
     const count = await this.userRepository.count({ where: { email } });
     return count > 0;
   }
-  async createUser(createUserDto: CreateUserDto): Promise<Partial<User>> {
 
+  async createUser(createUserDto: CreateUserDto): Promise<Partial<User>> {
+ 
     const isTaken = await this.isEmailTaken(createUserDto.email);
     if (isTaken) {
       throw new BadRequestException(`Email ${createUserDto.email} is already taken`);
@@ -100,10 +105,10 @@ export class UserService {
 
 
   async updatePassword(userId: number, newPassword: string) {
-    // Tìm user bằng userId
+    
     const user = await this.userRepository.findOneBy({ id: userId });
     if (!user) {
-      throw new Error('User not found'); // Hoặc bạn có thể dùng HttpException nếu đây là ứng dụng web
+      throw new Error('User not found'); 
     }
   
     // Mã hóa mật khẩu mới
@@ -114,6 +119,47 @@ export class UserService {
   
     // Lưu lại vào database
     await this.userRepository.save(user);
+  }
+ // register
+  async registerUser(createUserDto: CreateUserDto) {
+    const { email, username } = createUserDto;
+    const existingUser = await this.userRepository.findOne({ where: { email } });
+
+    if (existingUser) {
+      throw new BadRequestException('Email already exists.');
+    }
+    
+    const token = uuidv4(); // Tạo token xác minh
+    this.verificationCodes.set(token, createUserDto);
+
+    // Gửi email xác minh
+    await this.mailService.sendVerificationEmail(email,username, token);
+
+    return { message: 'Please check your email for verification.' };
+  }
+
+  async verifyCode(code: string): Promise<string> {
+    const userDto = this.verificationCodes.get(code);
+
+    if (!userDto) {
+      throw new BadRequestException('Invalid or expired verification code.');
+    }
+
+    // Hash password
+    const hashedPassword = await hashPasswordHelper(userDto.password);
+
+     // Tạo đối tượng user bằng Spread Operator
+     const user: User = {
+      ...userDto,
+      role: 'USER',
+      password: hashedPassword, // Ghi đè password sau khi hash
+
+    } as User;
+    await this.userRepository.save(user);
+
+    this.verificationCodes.delete(code);
+
+    return 'Email verified. You can now login.';
   }
 
 }

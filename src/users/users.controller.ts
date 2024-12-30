@@ -31,7 +31,8 @@ export class UsersController {
    */
   @Post()
   async create(@Body() createUserDto: CreateUserDto) {
-    // hash password
+    console.log("===create===", createUserDto);
+    
 
     return await this.userService.createUser(createUserDto);
   }
