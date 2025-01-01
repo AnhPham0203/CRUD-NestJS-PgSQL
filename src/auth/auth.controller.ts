@@ -3,7 +3,7 @@ import { AuthService } from './auth.service';
 import { CreateAuthDto } from './dto/create-auth.dto';
 import { MailService } from 'src/mail/mail.service';
 import { RegisterAuthDto } from './dto/register-auth.dto';
-import { CreateUserDto } from 'src/users/dto/request/create-user.dto';
+import { CreateUserDto } from 'src/modules/users/dto/request/create-user.dto';
 
 @Controller('auth')
 export class AuthController {
@@ -27,13 +27,6 @@ export class AuthController {
 
     return 'send email ok lan nua';
   }
-
-  // @Post('verify-email')
-  // async verifyMail(@Body('email') email: string) {
-
-  //   return await this.authService.sendVerifyEmail(email)
-  //   return "send email ok1"
-  // }
 
   @Post('register')
   register(@Body() registerAuthDto: CreateUserDto) {

@@ -14,7 +14,7 @@ async function bootstrap() {
   // });
   app.enableCors()
   // Sử dụng ValidationPipe toàn cục
-  // app.useGlobalPipes(new ValidationPipe({ transform: true, whitelist: true }));
+  app.useGlobalPipes(new ValidationPipe({ transform: true, whitelist: true }));
 
   // await app.listen(process.env.PORT ?? 8080);
   await app.listen(5000)

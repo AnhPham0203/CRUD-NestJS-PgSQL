@@ -7,9 +7,9 @@ import {
 } from 'class-validator';
 
 export class UpdateUserDto {
-  @IsOptional()
-  @IsString()
-  readonly name?: string;
+  // @IsOptional()
+  // @IsString()
+  // readonly name?: string;
 
   @IsOptional()
   @IsInt()

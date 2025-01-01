@@ -22,12 +22,3 @@ export const compareHashPasswordHelper = async (plainPassword: string, hashPassw
     }
 }
 
-// export const compareHashPasswordHelper = async (plainPassword: string, hashPassword: string) => {
-//     try {
-//         const match = bcrypt.compare(plainPassword, hashPassword)
-//         return match
-//     } catch (error) {
-//         console.log(error);
-
-//     }
-// }

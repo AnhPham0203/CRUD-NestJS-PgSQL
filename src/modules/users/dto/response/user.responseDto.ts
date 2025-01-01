@@ -1,17 +1,18 @@
 import { Expose } from "class-transformer";
+import { Task } from "src/modules/tasks/entities/task.entities";
 
-export class UserResponeDto {
+export class UserResponseDto {
     @Expose()
     id: number;
 
-    @Expose()
-    name: string;
+    // @Expose()
+    // name: string;
 
     @Expose()
     username: string;
 
-    @Expose()
-    email: string;
+    // @Expose()
+    // email: string;
 
     @Expose()
     age: number;
@@ -21,4 +22,7 @@ export class UserResponeDto {
 
     @Expose()
     role: string;
+
+    // @Expose()
+    // tasks: Task[];
 }

@@ -7,11 +7,11 @@ import {
 import { JwtService } from '@nestjs/jwt';
 import { compareHashPasswordHelper } from 'src/helpers/util';
 import { MailService } from 'src/mail/mail.service';
-import { UserService } from 'src/users/users.service';
+import { UserService } from 'src/modules/users/users.service';
 import { RegisterAuthDto } from './dto/register-auth.dto';
-import { User } from 'src/users/entities/user.entities';
+import { User } from 'src/modules/users/entities/user.entities';
 import { CreateAuthDto } from './dto/create-auth.dto';
-import { CreateUserDto } from 'src/users/dto/request/create-user.dto';
+import { CreateUserDto } from 'src/modules/users/dto/request/create-user.dto';
 
 @Injectable()
 export class AuthService {
@@ -51,7 +51,7 @@ export class AuthService {
     if (!isValidPassword) {
       throw new UnauthorizedException('email/password invalid');
     }
-    const payload = { sub: user.id, username: user.username, role: user.role };
+    const payload = { id: user.id, username: user.username, role: user.role };
     return {
       access_token: await this.jwtService.signAsync(payload),
     };

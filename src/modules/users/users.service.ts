@@ -1,10 +1,11 @@
-import { BadRequestException, HttpException, HttpStatus, Injectable, NotFoundException } from '@nestjs/common';
+import { TasksService } from './../tasks/tasks.service';
+import { BadRequestException, forwardRef, HttpException, HttpStatus, Inject, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { User } from './entities/user.entities';
 import { hashPasswordHelper } from 'src/helpers/util';
 import { plainToClass, plainToInstance } from 'class-transformer';
-import { UserResponeDto } from './dto/response/user.responseDto';
+import { UserResponseDto } from './dto/response/user.responseDto';
 import { CreateUserDto } from './dto/request/create-user.dto';
 import { UpdateUserDto } from './dto/request/update-user.dto';
 import { MailService } from 'src/mail/mail.service';
@@ -20,7 +21,10 @@ export class UserService {
   private verificationCodes = new Map<string, CreateUserDto>();
   constructor(
     @InjectRepository(User) private readonly userRepository: Repository<User>,
-    private mailService: MailService
+    private mailService: MailService, 
+
+    @Inject(forwardRef(() => TasksService))
+    private tasksService: TasksService
   ) { }
 
 
@@ -30,7 +34,7 @@ export class UserService {
     return count > 0;
   }
 
-  async createUser(createUserDto: CreateUserDto): Promise<Partial<User>> {
+  async createUser(createUserDto: CreateUserDto): Promise<Partial<UserResponseDto>> {
  
     const isTaken = await this.isEmailTaken(createUserDto.email);
     if (isTaken) {
@@ -43,17 +47,40 @@ export class UserService {
     // Tạo đối tượng user bằng Spread Operator
     const user: User = {
       ...createUserDto,
-      role: 'USER',
+      // role: 'USER',
       password: hashedPassword, // Ghi đè password sau khi hash
 
     } as User;
-    await this.userRepository.save(user);
+   const savedUser =await this.userRepository.save(user);
 
-    return plainToInstance(User, user);
+    return plainToInstance(UserResponseDto, savedUser, { excludeExtraneousValues: true });
   }
 
+  // create user Admin
 
-  async findAllUser(): Promise<UserResponeDto[]> {
+  async createUserAdmin(createUserDto: CreateUserDto): Promise<Partial<UserResponseDto>> {
+ 
+    const isTaken = await this.isEmailTaken(createUserDto.email);
+    if (isTaken) {
+      throw new BadRequestException(`Email ${createUserDto.email} is already taken`);
+    }
+
+    // Hash password
+    const hashedPassword = await hashPasswordHelper(createUserDto.password);
+
+    // Tạo đối tượng user bằng Spread Operator
+    const user: User = {
+      ...createUserDto,
+      role: 'admin',
+      password: hashedPassword, // Ghi đè password sau khi hash
+
+    } as User
+  const savedUser=  await this.userRepository.save(user);
+
+    return plainToInstance(UserResponseDto, savedUser,{ excludeExtraneousValues: true });
+  }
+
+  async findAllUser(): Promise<UserResponseDto[]> {
     const users = await this.userRepository.find();
     if (users.length === 0) {
       throw new HttpException(
@@ -61,11 +88,11 @@ export class UserService {
         HttpStatus.NOT_FOUND,
       );
     }
-    return plainToInstance(UserResponeDto, users, { excludeExtraneousValues: true });
+    return plainToInstance(UserResponseDto, users, { excludeExtraneousValues: true });
   }
 
 
-  async viewUser(id: number): Promise<UserResponeDto> {
+  async findUserById(id: number): Promise<UserResponseDto> {
     const user = await this.userRepository.findOne({ where: { id } });
 
     if (!user) {
@@ -74,8 +101,48 @@ export class UserService {
         HttpStatus.NOT_FOUND,
       );
     }
-    return plainToInstance(UserResponeDto, user, { excludeExtraneousValues: true });
+    return plainToInstance(UserResponseDto, user, { excludeExtraneousValues: true });
   }
+
+  // find role admin
+  async findAllAdminUsers(): Promise<UserResponseDto[]> {
+    // Tìm các user có role là 'admin'
+    const admins = await this.userRepository.find({
+      where: { role: 'admin' }, // Điều kiện role
+    });
+  
+    // Kiểm tra nếu danh sách admin rỗng
+    if (admins.length === 0) {
+      throw new HttpException(
+        'No admin users found',
+        HttpStatus.NOT_FOUND,
+      );
+    }
+    // Chuyển đổi dữ liệu sang DTO
+    return plainToInstance(UserResponseDto, admins, { excludeExtraneousValues: true });
+  }
+  //find role user
+  // async findAllRoleUser(id: number): Promise<UserResponseDto> {
+  //   // Tìm các user có role là 'admin'
+  //   const users = await this.userRepository.find({
+  //     where: {
+  //       id: id, // Điều kiện lọc theo id
+  //       role: 'user', // Điều kiện role
+  //   }, 
+  //   });
+  
+  //   // Kiểm tra nếu danh sách admin rỗng
+  //   if (users.length === 0) {
+  //     throw new HttpException(
+  //       'No admin users found',
+  //       HttpStatus.NOT_FOUND,
+  //     );
+  //   }
+  //   // Chuyển đổi dữ liệu sang DTO
+  //   return plainToInstance(UserResponseDto, users, { excludeExtraneousValues: true });
+  // }
+
+
 
   async findByEmail(email: string): Promise<User | null> {
     const user = await this.userRepository.findOne({ where: { email: email } })
@@ -91,13 +158,19 @@ export class UserService {
 
 
   async removeUser(id: number): Promise<{ message: string }> {
-    const user = await this.userRepository.findOne({ where: { id } })
+    const user = await this.userRepository.findOne({ where: { id },relations: ['tasks'] })
     if (!user) {
       throw new HttpException(
         `User with id ${id} does not exist.`,
         HttpStatus.NOT_FOUND,
       );
     }
+
+    for (const task of user.tasks) {
+      task.assignedTo = null; // Gán null cho khóa ngoại
+      await this.tasksService.saveTask(task);
+    }
+
     await this.userRepository.delete(id);
 
     return { message: `User with id ${id} deleted successfully.` };

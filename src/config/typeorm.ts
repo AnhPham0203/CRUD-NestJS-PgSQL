@@ -10,8 +10,8 @@ const config = {
     port: 5432, // Cổng mặc định của PostgreSQL
     username: 'postgres', // Tên người dùng PostgreSQL
     password: 'anhpham0203', // Mật khẩu
-    database: 'pgWithNest', // Tên cơ sở dữ liệu
-    entities: ["dist/**/*.entity.js"], // Đảm bảo đường dẫn trỏ đến file .js đã biên dịch
+    database: 'TestDB', // Tên cơ sở dữ liệu
+    entities: ["dist/modules/**/*.entities.js"], // Đảm bảo đường dẫn trỏ đến file .js đã biên dịch
     migrations: ["dist/migrations/*{.ts,.js}"],
     autoLoadEntities: true,
     synchronize: false,

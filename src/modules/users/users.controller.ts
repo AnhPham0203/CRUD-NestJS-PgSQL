@@ -37,11 +37,19 @@ export class UsersController {
     return await this.userService.createUser(createUserDto);
   }
 
+  @Post('create-admin')
+  async createAdmin(@Body() createUserDto: CreateUserDto) {
+    console.log("===createAdmin===", createUserDto);
+    
+
+    return await this.userService.createUserAdmin(createUserDto);
+  }
+
   @Get('admin')
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(Role.ADMIN) // Chỉ vai trò 'admin' mới truy cập được
-  getAdminData() {
-
+  getAdminData() {  
+    return  this.userService.findAllAdminUsers()
     return { message: 'This is admin data' };
   }
 
@@ -72,7 +80,7 @@ export class UsersController {
   @Get(':id')
   findOne(@Param('id') id: string) {
     const userId = Number(id);
-    return this.userService.viewUser(userId);
+    return this.userService.findUserById(userId);
   }
 
 
