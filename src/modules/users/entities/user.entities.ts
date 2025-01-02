@@ -1,6 +1,7 @@
 import { Exclude } from 'class-transformer';
-import { Role } from 'src/auth/enums/role.enum';
+// import { Role } from 'src/auth/enums/role.enum';
 import { ReportUser } from 'src/modules/reports/entities/report-user.entities';
+import { Role } from 'src/modules/roles/entities/role.entities';
 // import { Role } from 'src/modules/roles/entities/role.entities';
 import { Task } from 'src/modules/tasks/entities/task.entities';
 import { Column, Entity, ManyToOne, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
@@ -34,11 +35,11 @@ export class User {
    */
   gender: string;
 
-  @Column({ type: 'enum', enum: Role, default: Role.USER })
-  role: string;
+  // @Column({ type: 'enum', enum: Role, default: Role.USER })
+  // role: string;
 
-  // @ManyToOne(() => Role, (role) => role.users, { eager: true })
-  // role: Role;
+  @ManyToOne(() => Role, (role) => role.users, { eager: true })
+  role: Role;
 
   @OneToMany(() => Task, (task) => task.assignedTo)
   tasks: Task[];
@@ -49,5 +50,7 @@ export class User {
   @OneToMany(() => ReportUser, (report) => report.reportedUser)
   reportedReports: ReportUser[]; 
   
-  // @OneT
+  constructor() {
+    this.role = { id: 1, name: 'user' } as Role; // Giả sử id 1 là role 'user'
+  }
 }

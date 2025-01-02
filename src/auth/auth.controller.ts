@@ -1,9 +1,11 @@
-import { Controller, Post, Body, Get, Query } from '@nestjs/common';
+import { Controller, Post, Body, Get, Query, Res } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { CreateAuthDto } from './dto/create-auth.dto';
 import { MailService } from 'src/mail/mail.service';
 import { RegisterAuthDto } from './dto/register-auth.dto';
 import { CreateUserDto } from 'src/modules/users/dto/request/create-user.dto';
+import { RegisterUserDto } from 'src/modules/users/dto/request/register-user.dto';
+import { Response } from 'express';
 
 @Controller('auth')
 export class AuthController {
@@ -13,10 +15,10 @@ export class AuthController {
   ) {}
 
   @Post('login')
-  login(@Body() createAuthDto: CreateAuthDto) {
+  login(@Body() createAuthDto: CreateAuthDto,@Res({ passthrough: true }) res: Response) {
     // console.log("======", createAuthDto);
     // return "ok"
-    return this.authService.signIn(createAuthDto.email, createAuthDto.password);
+    return this.authService.signIn(createAuthDto.email, createAuthDto.password,res);
   }
 
   @Post('test-email')
@@ -29,7 +31,7 @@ export class AuthController {
   }
 
   @Post('register')
-  register(@Body() registerAuthDto: CreateUserDto) {
+  register(@Body() registerAuthDto: RegisterUserDto) {
     console.log('===Register===', registerAuthDto);
     // return "ok"
     return this.authService.registerUser(registerAuthDto);

@@ -2,6 +2,7 @@ import {
   HttpException,
   HttpStatus,
   Injectable,
+  
   UnauthorizedException,
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
@@ -12,6 +13,10 @@ import { RegisterAuthDto } from './dto/register-auth.dto';
 import { User } from 'src/modules/users/entities/user.entities';
 import { CreateAuthDto } from './dto/create-auth.dto';
 import { CreateUserDto } from 'src/modules/users/dto/request/create-user.dto';
+import { RegisterUserDto } from 'src/modules/users/dto/request/register-user.dto';
+import { v4 as uuidv4 } from 'uuid';
+import { Response } from 'express';
+import { Res } from '@nestjs/common';
 
 @Injectable()
 export class AuthService {
@@ -20,6 +25,8 @@ export class AuthService {
     private jwtService: JwtService,
     private mailSevice: MailService,
   ) {}
+
+  private verificationCodes = new Map<string, CreateUserDto>();
 
   async validateUser(username: string, pass: string): Promise<any> {
     const user = await this.userService.findByEmail(username);
@@ -33,7 +40,7 @@ export class AuthService {
     return user;
   }
   // register
-  async registerUser(registerUserDto: CreateUserDto) {
+  async registerUser(registerUserDto: RegisterUserDto) {
     return this.userService.registerUser(registerUserDto);
   }
 
@@ -41,7 +48,7 @@ export class AuthService {
     return this.userService.verifyCode(code);
   }
 
-  async signIn(email: string, pass: string): Promise<any> {
+  async signIn(email: string, pass: string,@Res({ passthrough: true }) res: Response): Promise<any> {
     const user = await this.userService.findByEmail(email);
     const isValidPassword = await compareHashPasswordHelper(
       pass,
@@ -52,8 +59,18 @@ export class AuthService {
       throw new UnauthorizedException('email/password invalid');
     }
     const payload = { id: user.id, username: user.username, role: user.role };
+    const accessToken = await this.jwtService.signAsync(payload);
+
+    // Đặt access_token vào cookie
+    res.cookie('access_token', accessToken, {
+      httpOnly: true,  // Cookie chỉ có thể được truy cập qua HTTP (không thể truy cập qua JavaScript)
+      secure: true,    // Chỉ gửi cookie qua HTTPS (khi chạy trên môi trường production)
+      sameSite: 'strict', // Giới hạn cookie chỉ được gửi trên cùng một site
+      maxAge: 3600000, // Thời gian tồn tại của cookie (1 giờ)
+  });
     return {
-      access_token: await this.jwtService.signAsync(payload),
+      // access_token: await this.jwtService.signAsync(payload),
+       role: user.role 
     };
   }
 
@@ -80,8 +97,9 @@ export class AuthService {
     if (!user) {
       throw new HttpException('Email not found', HttpStatus.NOT_FOUND);
     }
-
-    const token = this.jwtService.sign({ email }, { expiresIn: '15m' }); // Token hết hạn sau 15 phút
+    const token = uuidv4(); // Tạo token xác minh
+    this.verificationCodes.set(token, user);
+    // const token = this.jwtService.sign({ email }, { expiresIn: '15m' }); // Token hết hạn sau 15 phút
 
     // Gửi email
     await this.mailSevice.sendMailRePassword(token);
@@ -91,10 +109,12 @@ export class AuthService {
     };
   }
 
-  async resetPassword(token: string, newPassword: string) {
+  async resetPassword(code: string, newPassword: string) {
     try {
-      const payload = this.jwtService.verify(token);
-      const user = await this.userService.findByEmail(payload.email);
+      // const payload = this.jwtService.verify(token);
+      // const user = await this.userService.findByEmail(payload.email);
+      const userDto = this.verificationCodes.get(code);
+      const user = await this.userService.findByEmail(userDto.email);
       if (!user) {
         throw new HttpException('Invalid token', HttpStatus.UNAUTHORIZED);
       }

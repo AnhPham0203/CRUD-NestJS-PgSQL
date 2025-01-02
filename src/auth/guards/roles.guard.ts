@@ -27,33 +27,49 @@ export class RolesGuard implements CanActivate {
 
     const token = authorization.split(' ')[1];
 
+    // try {
+    //   // Giải mã JWT
+    //   const decoded = jwt.verify(token, jwtConstants.secret); // Đổi 'yourSecretKey' thành secret bạn dùng để ký token
+    //   // console.log('Decoded Token:', decoded);
+
+    //   // Gán user vào request (nếu cần)
+    //   request.user = decoded;
+
+    //   if (!requiredRoles) {
+    //     return true;
+    //   }
+
+    //   const userRoles = Array.isArray(decoded['role']) ? decoded['role'] : [decoded['role']];
+
+    //   return requiredRoles.some((role) => 
+    //     userRoles.map((r) => r.toUpperCase()).includes(role.toUpperCase())
+    //   );
+    // } catch (err) {
+    //   console.log('Invalid or expired token:', err.message);
+    //   return false;
+    // }
+
     try {
       // Giải mã JWT
       const decoded = jwt.verify(token, jwtConstants.secret); // Đổi 'yourSecretKey' thành secret bạn dùng để ký token
-      // console.log('Decoded Token:', decoded);
-
+      console.log('Decoded Token:', decoded);
+  
       // Gán user vào request (nếu cần)
       request.user = decoded;
-
+  
       if (!requiredRoles) {
         return true;
       }
-
-      // Kiểm tra role của user
-      // const userRoles = decoded['role'] || [];
+  
+      // Kiểm tra role từ đối tượng decoded
       const userRoles = Array.isArray(decoded['role']) ? decoded['role'] : [decoded['role']];
-      // console.log(requiredRoles);
-
-      // console.log("=======");
-      // console.log(userRoles);
-      
-
-      // console.log(requiredRoles.some((role) => 
-      //   userRoles.map((r) => r.toUpperCase()).includes(role.toUpperCase())
-      // ));
-
-      return requiredRoles.some((role) => 
-        userRoles.map((r) => r.toUpperCase()).includes(role.toUpperCase())
+  
+      // Lấy quyền từ đối tượng Role (giả sử mỗi role có tên 'name')
+      const userRoleNames = userRoles.map((role) => role.name.toUpperCase()); // role.name nếu là đối tượng Role
+  
+      // Kiểm tra quyền của người dùng có trong requiredRoles không
+      return requiredRoles.some((role) =>
+        userRoleNames.includes(role.toUpperCase())
       );
     } catch (err) {
       console.log('Invalid or expired token:', err.message);

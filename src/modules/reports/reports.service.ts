@@ -45,8 +45,8 @@ export class ReportsService {
       
         // Tạo report
         const report = this.reportUserRepository.create({
-          reporter,
-          reportedUser,
+          reporter:{ id: reporter.id },
+          reportedUser: { id: reportedUser.id },
           reason,
           status: 'pending', // Trạng thái mặc định
         });
@@ -56,6 +56,18 @@ export class ReportsService {
       
         // Trả về DTO
         return plainToInstance(ReportResponseDto, report, { excludeExtraneousValues: true });
+      }
+
+      async getAllReportUser(): Promise<ReportResponseDto[]> {
+        // Tìm tất cả các báo cáo người dùng
+        const reports = await this.reportUserRepository.find({
+          relations: ['reportedUser', 'reporter'], // Join với các bảng liên quan (User)
+        });
+    
+        // Chuyển đổi đối tượng báo cáo thành DTO
+        return plainToInstance(ReportResponseDto, reports, {
+          excludeExtraneousValues: true, // Exclude các trường không cần thiết
+        });
       }
       
 }

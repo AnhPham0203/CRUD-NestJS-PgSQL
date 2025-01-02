@@ -6,12 +6,12 @@ const passwordRegEx =
 export class CreateAuthDto {
    
 
-    @IsNotEmpty()
+      @IsNotEmpty()
       @IsEmail({}, { message: 'Please provide valid Email.' })
       email: string;
 
       @IsNotEmpty()
-        @Matches(passwordRegEx, {
+      @Matches(passwordRegEx, {
           message: `Password must contain Minimum 8 and maximum 20 characters, 
           at least one uppercase letter, 
           one lowercase letter, 

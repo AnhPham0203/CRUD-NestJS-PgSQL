@@ -10,6 +10,7 @@ import { CreateUserDto } from './dto/request/create-user.dto';
 import { UpdateUserDto } from './dto/request/update-user.dto';
 import { MailService } from 'src/mail/mail.service';
 import { v4 as uuidv4 } from 'uuid';
+import { RegisterUserDto } from './dto/request/register-user.dto';
 const bcrypt = require('bcrypt');
 
 @Injectable()
@@ -18,7 +19,8 @@ export class UserService {
    * Here, we have used data mapper approch for this tutorial that is why we
    * injecting repository here. Another approch can be Active records.
    */
-  private verificationCodes = new Map<string, CreateUserDto>();
+  // private verificationCodes = new Map<string, CreateUserDto>();
+  private verificationCodesRegister = new Map<string, RegisterUserDto>();
   constructor(
     @InjectRepository(User) private readonly userRepository: Repository<User>,
     private mailService: MailService, 
@@ -71,7 +73,7 @@ export class UserService {
     // Tạo đối tượng user bằng Spread Operator
     const user: User = {
       ...createUserDto,
-      role: 'admin',
+      role: { name: 'admin' } ,
       password: hashedPassword, // Ghi đè password sau khi hash
 
     } as User
@@ -108,7 +110,7 @@ export class UserService {
   async findAllAdminUsers(): Promise<UserResponseDto[]> {
     // Tìm các user có role là 'admin'
     const admins = await this.userRepository.find({
-      where: { role: 'admin' }, // Điều kiện role
+      where: { role: { name: 'admin' }  }, // Điều kiện role
     });
   
     // Kiểm tra nếu danh sách admin rỗng
@@ -121,27 +123,6 @@ export class UserService {
     // Chuyển đổi dữ liệu sang DTO
     return plainToInstance(UserResponseDto, admins, { excludeExtraneousValues: true });
   }
-  //find role user
-  // async findAllRoleUser(id: number): Promise<UserResponseDto> {
-  //   // Tìm các user có role là 'admin'
-  //   const users = await this.userRepository.find({
-  //     where: {
-  //       id: id, // Điều kiện lọc theo id
-  //       role: 'user', // Điều kiện role
-  //   }, 
-  //   });
-  
-  //   // Kiểm tra nếu danh sách admin rỗng
-  //   if (users.length === 0) {
-  //     throw new HttpException(
-  //       'No admin users found',
-  //       HttpStatus.NOT_FOUND,
-  //     );
-  //   }
-  //   // Chuyển đổi dữ liệu sang DTO
-  //   return plainToInstance(UserResponseDto, users, { excludeExtraneousValues: true });
-  // }
-
 
 
   async findByEmail(email: string): Promise<User | null> {
@@ -194,8 +175,8 @@ export class UserService {
     await this.userRepository.save(user);
   }
  // register
-  async registerUser(createUserDto: CreateUserDto) {
-    const { email, username } = createUserDto;
+  async registerUser(registerUserDto: RegisterUserDto) {
+    const { email, username } = registerUserDto;
     const existingUser = await this.userRepository.findOne({ where: { email } });
 
     if (existingUser) {
@@ -203,7 +184,7 @@ export class UserService {
     }
     
     const token = uuidv4(); // Tạo token xác minh
-    this.verificationCodes.set(token, createUserDto);
+    this.verificationCodesRegister.set(token, registerUserDto);
 
     // Gửi email xác minh
     await this.mailService.sendVerificationEmail(email,username, token);
@@ -212,7 +193,12 @@ export class UserService {
   }
 
   async verifyCode(code: string): Promise<string> {
-    const userDto = this.verificationCodes.get(code);
+    console.log(this.verificationCodesRegister);
+    
+    const userDto = this.verificationCodesRegister.get(code);
+
+    console.log(userDto);
+    
 
     if (!userDto) {
       throw new BadRequestException('Invalid or expired verification code.');
@@ -224,13 +210,13 @@ export class UserService {
      // Tạo đối tượng user bằng Spread Operator
      const user: User = {
       ...userDto,
-      role: 'USER',
+      // role: 'USER',
       password: hashedPassword, // Ghi đè password sau khi hash
 
     } as User;
     await this.userRepository.save(user);
 
-    this.verificationCodes.delete(code);
+    this.verificationCodesRegister.delete(code);
 
     return 'Email verified. You can now login.';
   }

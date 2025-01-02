@@ -1,4 +1,4 @@
-import { Expose } from "class-transformer";
+import { Expose, Transform } from "class-transformer";
 
 export class ReportResponseDto {
     @Expose()
@@ -18,5 +18,13 @@ export class ReportResponseDto {
   
     @Expose()
     createdAt: Date;
+
+    @Expose()
+    @Transform(({ value }) => value?.id, { toPlainOnly: true }) // Chỉ lấy id của reportedUser
+    reportedUserId: number;
+  
+    @Expose()
+    @Transform(({ value }) => value?.id, { toPlainOnly: true }) // Chỉ lấy id của reporter
+    reporterId: number;
   }
   

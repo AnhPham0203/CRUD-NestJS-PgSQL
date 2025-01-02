@@ -15,14 +15,20 @@ export class ReportsController {
     return this.reportsService.getReportTasks(filters);
   }
 
+  @Get('user')
+  async getAllReportUser(): Promise<ReportResponseDto[]> {
+    // Gọi phương thức service để lấy tất cả các báo cáo người dùng
+    return this.reportsService.getAllReportUser();
+  }
+
   @Post()
   // @UseGuards(AuthGuard('jwt'))
   @UseGuards(JwtAuthGuard)
-  async createReport(
+  async createReportUser(
     @Body() createReportDto: CreateReportUserDto,
     @Req() req: any, // Lấy thông tin user từ request
   ): Promise<ReportResponseDto> {
-    const reporter = req.user; // ID của người báo cáo từ token
+    // const reporter = req.user; // ID của người báo cáo từ token
     const reporterId = req.user.sub; // ID của người báo cáo từ token
     return this.reportsService.createReportUser(createReportDto, reporterId);
   }

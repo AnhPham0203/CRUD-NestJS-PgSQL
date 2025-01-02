@@ -56,7 +56,7 @@ export class UsersController {
   @Get('user')
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(Role.USER) // Chỉ vai trò 'user' mới truy cập được
-  getUserata() {
+  getUserdata() {
 
     return { message: 'This is user data' };
   }
