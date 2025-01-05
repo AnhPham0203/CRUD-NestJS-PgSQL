@@ -27,27 +27,6 @@ export class RolesGuard implements CanActivate {
 
     const token = authorization.split(' ')[1];
 
-    // try {
-    //   // Giải mã JWT
-    //   const decoded = jwt.verify(token, jwtConstants.secret); // Đổi 'yourSecretKey' thành secret bạn dùng để ký token
-    //   // console.log('Decoded Token:', decoded);
-
-    //   // Gán user vào request (nếu cần)
-    //   request.user = decoded;
-
-    //   if (!requiredRoles) {
-    //     return true;
-    //   }
-
-    //   const userRoles = Array.isArray(decoded['role']) ? decoded['role'] : [decoded['role']];
-
-    //   return requiredRoles.some((role) => 
-    //     userRoles.map((r) => r.toUpperCase()).includes(role.toUpperCase())
-    //   );
-    // } catch (err) {
-    //   console.log('Invalid or expired token:', err.message);
-    //   return false;
-    // }
 
     try {
       // Giải mã JWT

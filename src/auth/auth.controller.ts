@@ -15,17 +15,24 @@ export class AuthController {
   ) {}
 
   @Post('login')
-  login(@Body() createAuthDto: CreateAuthDto,@Res({ passthrough: true }) res: Response) {
+  login(
+    @Body() createAuthDto: CreateAuthDto,
+    @Res({ passthrough: true }) res: Response,
+  ) {
     // console.log("======", createAuthDto);
     // return "ok"
-    return this.authService.signIn(createAuthDto.email, createAuthDto.password,res);
+    return this.authService.signIn(
+      createAuthDto.email,
+      createAuthDto.password,
+      res,
+    );
   }
 
   @Post('test-email')
-   testMail(@Body('email') email: string) {
+  testMail(@Body('email') email: string) {
     console.log('====EMIL::===', email);
 
-     this.mailService.sendMail(email);
+    this.mailService.sendMail(email);
 
     return 'send email ok lan nua';
   }
@@ -55,8 +62,8 @@ export class AuthController {
   async resetPassword(
     @Body() resetPasswordDto: { code: string; newPassword: string },
   ) {
-    console.log("==resetPasswordDto===",resetPasswordDto);
-    
+    console.log('==resetPasswordDto===', resetPasswordDto);
+
     return await this.authService.resetPassword(
       resetPasswordDto.code,
       resetPasswordDto.newPassword,

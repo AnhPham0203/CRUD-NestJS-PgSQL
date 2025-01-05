@@ -18,10 +18,9 @@ import { RolesGuard } from 'src/auth/guards/roles.guard';
 import { Role } from 'src/auth/enums/role.enum';
 // import { Request } from 'express';
 
-
 @Controller('users')
 export class UsersController {
-  constructor(private readonly userService: UserService) { }
+  constructor(private readonly userService: UserService) {}
 
   /**
    * Post decorator represents method of request as we have used post decorator the method
@@ -31,16 +30,14 @@ export class UsersController {
    */
   @Post()
   async create(@Body() createUserDto: CreateUserDto) {
-    console.log("===create===", createUserDto);
-    
+    console.log('===create===', createUserDto);
 
     return await this.userService.createUser(createUserDto);
   }
 
   @Post('create-admin')
   async createAdmin(@Body() createUserDto: CreateUserDto) {
-    console.log("===createAdmin===", createUserDto);
-    
+    console.log('===createAdmin===', createUserDto);
 
     return await this.userService.createUserAdmin(createUserDto);
   }
@@ -48,8 +45,8 @@ export class UsersController {
   @Get('admin')
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(Role.ADMIN) // Chỉ vai trò 'admin' mới truy cập được
-  getAdminData() {  
-    return  this.userService.findAllAdminUsers()
+  getAdminData() {
+    return this.userService.findAllAdminUsers();
     return { message: 'This is admin data' };
   }
 
@@ -57,7 +54,6 @@ export class UsersController {
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(Role.USER) // Chỉ vai trò 'user' mới truy cập được
   getUserdata() {
-
     return { message: 'This is user data' };
   }
 
@@ -68,7 +64,6 @@ export class UsersController {
    */
   @Get()
   findAll(@Req() request: Request) {
-
     return this.userService.findAllUser();
   }
 
@@ -82,8 +77,6 @@ export class UsersController {
     const userId = Number(id);
     return this.userService.findUserById(userId);
   }
-
-
 
   /**
    * we have used patch decorator with id param to get id from request
@@ -106,5 +99,4 @@ export class UsersController {
   }
 
   // test rolead
-
 }

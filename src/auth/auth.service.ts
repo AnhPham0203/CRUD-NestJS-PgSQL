@@ -2,7 +2,6 @@ import {
   HttpException,
   HttpStatus,
   Injectable,
-  
   UnauthorizedException,
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
@@ -48,29 +47,37 @@ export class AuthService {
     return this.userService.verifyCode(code);
   }
 
-  async signIn(email: string, pass: string,@Res({ passthrough: true }) res: Response): Promise<any> {
+  async signIn(
+    email: string,
+    pass: string,
+    @Res({ passthrough: true }) res: Response,
+  ): Promise<any> {
     const user = await this.userService.findByEmail(email);
+
+    if (!user) {
+      throw new UnauthorizedException('email invalid');
+    }
     const isValidPassword = await compareHashPasswordHelper(
       pass,
       user.password,
     );
 
     if (!isValidPassword) {
-      throw new UnauthorizedException('email/password invalid');
+      throw new UnauthorizedException('password invalid');
     }
     const payload = { id: user.id, username: user.username, role: user.role };
     const accessToken = await this.jwtService.signAsync(payload);
 
     // Đặt access_token vào cookie
     res.cookie('access_token', accessToken, {
-      httpOnly: true,  // Cookie chỉ có thể được truy cập qua HTTP (không thể truy cập qua JavaScript)
-      secure: true,    // Chỉ gửi cookie qua HTTPS (khi chạy trên môi trường production)
-      sameSite: 'strict', // Giới hạn cookie chỉ được gửi trên cùng một site
+      httpOnly: true, // Cookie chỉ có thể được truy cập qua HTTP (không thể truy cập qua JavaScript)
+      secure: true, // Chỉ gửi cookie qua HTTPS (khi chạy trên môi trường production)
+      sameSite: 'none', // Giới hạn cookie chỉ được gửi trên cùng một site
       maxAge: 3600000, // Thời gian tồn tại của cookie (1 giờ)
-  });
+    });
     return {
       // access_token: await this.jwtService.signAsync(payload),
-       role: user.role 
+      role: user.role,
     };
   }
 

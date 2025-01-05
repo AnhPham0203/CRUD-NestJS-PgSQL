@@ -83,14 +83,22 @@ export class UserService {
   }
 
   async findAllUser(): Promise<UserResponseDto[]> {
-    const users = await this.userRepository.find();
+    const users = await this.userRepository.find( {relations: ['role']});
     if (users.length === 0) {
       throw new HttpException(
         "List users is empty",
         HttpStatus.NOT_FOUND,
       );
     }
-    return plainToInstance(UserResponseDto, users, { excludeExtraneousValues: true });
+    const userDTO= plainToInstance(
+      UserResponseDto,
+      users.map(user => ({
+        ...user,
+        role: user.role.name, // Lấy tên của role
+      })),
+      { excludeExtraneousValues: true },
+    );
+    return userDTO
   }
 
 
@@ -121,7 +129,15 @@ export class UserService {
       );
     }
     // Chuyển đổi dữ liệu sang DTO
-    return plainToInstance(UserResponseDto, admins, { excludeExtraneousValues: true });
+    const userDTO= plainToInstance(
+      UserResponseDto,
+      admins.map(user => ({
+        ...user,
+        role: user.role.name, // Lấy tên của role
+      })),
+      { excludeExtraneousValues: true },
+    );
+    return userDTO
   }
 
 

@@ -13,7 +13,7 @@ export class Task {
   @Column('text')
   description: string;
 
-  @Column({ default: 'pending' })
+  @Column({ default: 'Pending' })
   status: string;
 
   @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
