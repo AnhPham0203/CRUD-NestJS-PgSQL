@@ -13,90 +13,90 @@ import { ReportTaskDto } from '../reports/dto/report-task.dto';
 @Injectable()
 export class TasksService {
 
-    constructor(
-        @InjectRepository(Task)
-        private readonly taskRepository: Repository<Task>,
+  constructor(
+    @InjectRepository(Task)
+    private readonly taskRepository: Repository<Task>,
 
-        @Inject(forwardRef(() => UserService))
-        private readonly usersService: UserService,
-      ) {}
-      
-      // async findAllTasks(): Promise<TaskResponseDto[]> {
-      //   const tasks = await this.taskRepository.find({
-      //     relations: ['assignedTo'], // Load thông tin User liên quan
-      //   });
-      
-      //   return plainToInstance(TaskResponseDto, tasks, { excludeExtraneousValues: true });
-      // }
+    @Inject(forwardRef(() => UserService))
+    private readonly usersService: UserService,
+  ) { }
 
-      async findAllTasks(): Promise<TaskResponseDto[]> {
-        const tasks = await this.taskRepository.find({
-          relations: ['assignedTo'], // Load thông tin User liên quan
-        });
-      
-        // Chuyển đổi từng task, đảm bảo `assignedTo` là `UserResponseDto`
-        const tasksWithUserResponse = tasks.map((task) => {
-          const taskDto = plainToInstance(TaskResponseDto, task, { excludeExtraneousValues: true });
-      
-          if (task.assignedTo) {
-            taskDto.assignedTo = plainToInstance(UserResponseDto, task.assignedTo, { excludeExtraneousValues: true });
-          }
-      
-          return taskDto;
-        });
-      
-        return tasksWithUserResponse;
+  // async findAllTasks(): Promise<TaskResponseDto[]> {
+  //   const tasks = await this.taskRepository.find({
+  //     relations: ['assignedTo'], // Load thông tin User liên quan
+  //   });
+
+  //   return plainToInstance(TaskResponseDto, tasks, { excludeExtraneousValues: true });
+  // }
+
+  async findAllTasks(): Promise<TaskResponseDto[]> {
+    const tasks = await this.taskRepository.find({
+      relations: ['assignedTo'], // Load thông tin User liên quan
+    });
+
+    // Chuyển đổi từng task, đảm bảo `assignedTo` là `UserResponseDto`
+    const tasksWithUserResponse = tasks.map((task) => {
+      const taskDto = plainToInstance(TaskResponseDto, task, { excludeExtraneousValues: true });
+
+      if (task.assignedTo) {
+        taskDto.assignedTo = plainToInstance(UserResponseDto, task.assignedTo, { excludeExtraneousValues: true });
       }
 
-      //get report task
-      async getReportTasksService(filters: ReportTaskDto): Promise<Task[]> {
-        const query = this.taskRepository.createQueryBuilder('task');
-    
-        if (filters.startDate) {
-          query.andWhere('task.createdAt >= :startDate', { startDate: filters.startDate });
-        }
-        if (filters.endDate) {
-          query.andWhere('task.createdAt <= :endDate', { endDate: filters.endDate });
-        }
-        if (filters.status) {
-          query.andWhere('task.status = :status', { status: filters.status });
-        }
-    
-        return query.getMany();
-      }
-      
+      return taskDto;
+    });
 
-      async findOne(id: number): Promise<Task> {
-        const task = await this.taskRepository.findOne({ where: { id }, relations: ['assignedTo'] });
-        if (!task) {
-          throw new NotFoundException(`Task with ID ${id} not found`);
-        }
-        return task;
-      }
-      //Save task
-      async saveTask(taskData: Partial<Task>): Promise<Task> {
-        return this.taskRepository.save(taskData);
-      }
+    return tasksWithUserResponse;
+  }
 
-        // Tạo một task mới
-    async createTask(taskData: Partial<Task>, assignedUserId?: number): Promise<Task> {
-      // const task = this.taskRepository.create(taskData);
+  //get report task
+  async getReportTasksService(filters: ReportTaskDto): Promise<Task[]> {
+    const query = this.taskRepository.createQueryBuilder('task');
 
-      if (assignedUserId) {
-        const userDto = await this.usersService.findUserById(assignedUserId);
-        if (!userDto) {
-          throw new NotFoundException(`User with ID ${assignedUserId} not found`);
-        }
-        // const user = plainToInstance(UserResponseDto, userDto);
-        
-        taskData.assignedTo = userDto;
+    if (filters.startDate) {
+      query.andWhere('task.createdAt >= :startDate', { startDate: filters.startDate });
+    }
+    if (filters.endDate) {
+      query.andWhere('task.createdAt <= :endDate', { endDate: filters.endDate });
+    }
+    if (filters.status) {
+      query.andWhere('task.status = :status', { status: filters.status });
+    }
+
+    return query.getMany();
+  }
+
+
+  async findOne(id: number): Promise<Task> {
+    const task = await this.taskRepository.findOne({ where: { id }, relations: ['assignedTo'] });
+    if (!task) {
+      throw new NotFoundException(`Task with ID ${id} not found`);
+    }
+    return task;
+  }
+  //Save task
+  async saveTask(taskData: Partial<Task>): Promise<Task> {
+    return this.taskRepository.save(taskData);
+  }
+
+  // Tạo một task mới
+  async createTask(taskData: Partial<Task>, assignedUserId?: number): Promise<Task> {
+    // const task = this.taskRepository.create(taskData);
+
+    if (assignedUserId) {
+      const userDto = await this.usersService.findUserById(assignedUserId);
+      if (!userDto) {
+        throw new NotFoundException(`User with ID ${assignedUserId} not found`);
+      }
+      // const user = plainToInstance(UserResponseDto, userDto);
+
+      taskData.assignedTo = userDto;
     }
 
     return this.taskRepository.save(taskData);
   }
 
-   // Cập nhật task
-   async updateTask(id: number, updateData: UpdateTaskDto): Promise<string> {
+  // Cập nhật task
+  async updateTask(id: number, updateData: UpdateTaskDto): Promise<Task> {
     const task = await this.findOne(id);
     Object.assign(task, updateData);
 
@@ -109,22 +109,22 @@ export class TasksService {
       const user = plainToInstance(UserResponseDto, userDto);
       task.assignedTo = user;
     }
-      task.updatedAt= new Date()
-     this.taskRepository.save(task);
-     return `Task with id ${id} updated successfully.`
+    task.updatedAt = new Date()
+    return this.taskRepository.save(task);
+    //  return `Task with id ${id} updated successfully.`
   }
 
   // Xóa task
   async deleteTask(id: number): Promise<{ message: string }> {
     const task = await this.findOne(id);
-      if (!task) {
-          throw new HttpException(
-            `Task with id ${id} does not exist.`,
-            HttpStatus.NOT_FOUND,
-          );
-        }
+    if (!task) {
+      throw new HttpException(
+        `Task with id ${id} does not exist.`,
+        HttpStatus.NOT_FOUND,
+      );
+    }
     await this.taskRepository.remove(task);
     return { message: `Task with id ${id} deleted successfully.` };
   }
-  
+
 }

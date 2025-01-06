@@ -23,7 +23,7 @@ export class UserService {
   private verificationCodesRegister = new Map<string, RegisterUserDto>();
   constructor(
     @InjectRepository(User) private readonly userRepository: Repository<User>,
-    private mailService: MailService, 
+    private mailService: MailService,
 
     @Inject(forwardRef(() => TasksService))
     private tasksService: TasksService
@@ -37,7 +37,7 @@ export class UserService {
   }
 
   async createUser(createUserDto: CreateUserDto): Promise<Partial<UserResponseDto>> {
- 
+
     const isTaken = await this.isEmailTaken(createUserDto.email);
     if (isTaken) {
       throw new BadRequestException(`Email ${createUserDto.email} is already taken`);
@@ -53,7 +53,7 @@ export class UserService {
       password: hashedPassword, // Ghi đè password sau khi hash
 
     } as User;
-   const savedUser =await this.userRepository.save(user);
+    const savedUser = await this.userRepository.save(user);
 
     return plainToInstance(UserResponseDto, savedUser, { excludeExtraneousValues: true });
   }
@@ -61,7 +61,7 @@ export class UserService {
   // create user Admin
 
   async createUserAdmin(createUserDto: CreateUserDto): Promise<Partial<UserResponseDto>> {
- 
+
     const isTaken = await this.isEmailTaken(createUserDto.email);
     if (isTaken) {
       throw new BadRequestException(`Email ${createUserDto.email} is already taken`);
@@ -73,24 +73,24 @@ export class UserService {
     // Tạo đối tượng user bằng Spread Operator
     const user: User = {
       ...createUserDto,
-      role: { name: 'admin' } ,
+      role: { name: 'admin' },
       password: hashedPassword, // Ghi đè password sau khi hash
 
     } as User
-  const savedUser=  await this.userRepository.save(user);
+    const savedUser = await this.userRepository.save(user);
 
-    return plainToInstance(UserResponseDto, savedUser,{ excludeExtraneousValues: true });
+    return plainToInstance(UserResponseDto, savedUser, { excludeExtraneousValues: true });
   }
 
   async findAllUser(): Promise<UserResponseDto[]> {
-    const users = await this.userRepository.find( {relations: ['role']});
+    const users = await this.userRepository.find({ relations: ['role'] });
     if (users.length === 0) {
       throw new HttpException(
         "List users is empty",
         HttpStatus.NOT_FOUND,
       );
     }
-    const userDTO= plainToInstance(
+    const userDTO = plainToInstance(
       UserResponseDto,
       users.map(user => ({
         ...user,
@@ -118,9 +118,9 @@ export class UserService {
   async findAllAdminUsers(): Promise<UserResponseDto[]> {
     // Tìm các user có role là 'admin'
     const admins = await this.userRepository.find({
-      where: { role: { name: 'admin' }  }, // Điều kiện role
+      where: { role: { name: 'admin' } }, // Điều kiện role
     });
-  
+
     // Kiểm tra nếu danh sách admin rỗng
     if (admins.length === 0) {
       throw new HttpException(
@@ -129,9 +129,35 @@ export class UserService {
       );
     }
     // Chuyển đổi dữ liệu sang DTO
-    const userDTO= plainToInstance(
+    const userDTO = plainToInstance(
       UserResponseDto,
       admins.map(user => ({
+        ...user,
+        role: user.role.name, // Lấy tên của role
+      })),
+      { excludeExtraneousValues: true },
+    );
+    return userDTO
+  }
+  // find all users role user
+
+  async findAllRoleUser(): Promise<UserResponseDto[]> {
+    // Tìm các user có role là 'admin'
+    const users = await this.userRepository.find({
+      where: { role: { name: 'user' } }, // Điều kiện role
+    });
+
+    // Kiểm tra nếu danh sách admin rỗng
+    if (users.length === 0) {
+      throw new HttpException(
+        'Not found  users ',
+        HttpStatus.NOT_FOUND,
+      );
+    }
+    // Chuyển đổi dữ liệu sang DTO
+    const userDTO = plainToInstance(
+      UserResponseDto,
+      users.map(user => ({
         ...user,
         role: user.role.name, // Lấy tên của role
       })),
@@ -155,7 +181,7 @@ export class UserService {
 
 
   async removeUser(id: number): Promise<{ message: string }> {
-    const user = await this.userRepository.findOne({ where: { id },relations: ['tasks'] })
+    const user = await this.userRepository.findOne({ where: { id }, relations: ['tasks'] })
     if (!user) {
       throw new HttpException(
         `User with id ${id} does not exist.`,
@@ -175,22 +201,22 @@ export class UserService {
 
 
   async updatePassword(userId: number, newPassword: string) {
-    
+
     const user = await this.userRepository.findOneBy({ id: userId });
     if (!user) {
-      throw new Error('User not found'); 
+      throw new Error('User not found');
     }
-  
+
     // Mã hóa mật khẩu mới
     const hashedPassword = await bcrypt.hash(newPassword, 10);
-  
+
     // Cập nhật mật khẩu
     user.password = hashedPassword;
-  
+
     // Lưu lại vào database
     await this.userRepository.save(user);
   }
- // register
+  // register
   async registerUser(registerUserDto: RegisterUserDto) {
     const { email, username } = registerUserDto;
     const existingUser = await this.userRepository.findOne({ where: { email } });
@@ -198,23 +224,23 @@ export class UserService {
     if (existingUser) {
       throw new BadRequestException('Email already exists.');
     }
-    
+
     const token = uuidv4(); // Tạo token xác minh
     this.verificationCodesRegister.set(token, registerUserDto);
 
     // Gửi email xác minh
-    await this.mailService.sendVerificationEmail(email,username, token);
+    await this.mailService.sendVerificationEmail(email, username, token);
 
     return { message: 'Please check your email for verification.' };
   }
 
   async verifyCode(code: string): Promise<string> {
     console.log(this.verificationCodesRegister);
-    
+
     const userDto = this.verificationCodesRegister.get(code);
 
     console.log(userDto);
-    
+
 
     if (!userDto) {
       throw new BadRequestException('Invalid or expired verification code.');
@@ -223,8 +249,8 @@ export class UserService {
     // Hash password
     const hashedPassword = await hashPasswordHelper(userDto.password);
 
-     // Tạo đối tượng user bằng Spread Operator
-     const user: User = {
+    // Tạo đối tượng user bằng Spread Operator
+    const user: User = {
       ...userDto,
       // role: 'USER',
       password: hashedPassword, // Ghi đè password sau khi hash

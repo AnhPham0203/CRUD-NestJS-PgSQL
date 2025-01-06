@@ -10,7 +10,7 @@ const config = {
     port: 5432, // Cổng mặc định của PostgreSQL
     username: 'postgres', // Tên người dùng PostgreSQL
     password: 'anhpham0203', // Mật khẩu
-    database: 'TestDB', // Tên cơ sở dữ liệu
+    database: 'CRUD-NESTJS', // Tên cơ sở dữ liệu
     entities: ["dist/modules/**/*.entities.js"], // Đảm bảo đường dẫn trỏ đến file .js đã biên dịch
     migrations: ["dist/migrations/*{.ts,.js}"],
     autoLoadEntities: true,

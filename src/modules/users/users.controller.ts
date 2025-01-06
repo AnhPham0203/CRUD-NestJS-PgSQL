@@ -43,8 +43,8 @@ export class UsersController {
   }
 
   @Get('admin')
-  @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(Role.ADMIN) // Chỉ vai trò 'admin' mới truy cập được
+  // @UseGuards(JwtAuthGuard, RolesGuard)
+  // @Roles(Role.ADMIN) // Chỉ vai trò 'admin' mới truy cập được
   getAdminData() {
     return this.userService.findAllAdminUsers();
     return { message: 'This is admin data' };
@@ -65,6 +65,11 @@ export class UsersController {
   @Get()
   findAll(@Req() request: Request) {
     return this.userService.findAllUser();
+  }
+
+  @Get('role-user')
+  findAllRoleUser(@Req() request: Request) {
+    return this.userService.findAllRoleUser();
   }
 
   /**

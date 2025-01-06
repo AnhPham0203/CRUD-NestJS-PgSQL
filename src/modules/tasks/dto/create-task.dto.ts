@@ -8,7 +8,7 @@ export class CreateTaskDto {
   @IsNotEmpty()
   @IsString()
   description: string;
-
+  
   @IsOptional()
   @IsEnum(['Pending', 'In Progress', 'Completed'])
   status?: string;
@@ -16,4 +16,5 @@ export class CreateTaskDto {
   @IsOptional()
   @IsInt()
   assignedTo?: number;
+  
 }
