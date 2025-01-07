@@ -1,9 +1,9 @@
 import { TasksService } from './../tasks/tasks.service';
-import { BadRequestException, forwardRef, HttpException, HttpStatus, Inject, Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, forwardRef, HttpException, HttpStatus, Inject, Injectable, NotFoundException, UnauthorizedException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { User } from './entities/user.entities';
-import { hashPasswordHelper } from 'src/helpers/util';
+import { compareHashPasswordHelper, hashPasswordHelper } from 'src/helpers/util';
 import { plainToClass, plainToInstance } from 'class-transformer';
 import { UserResponseDto } from './dto/response/user.responseDto';
 import { CreateUserDto } from './dto/request/create-user.dto';
@@ -11,6 +11,8 @@ import { UpdateUserDto } from './dto/request/update-user.dto';
 import { MailService } from 'src/mail/mail.service';
 import { v4 as uuidv4 } from 'uuid';
 import { RegisterUserDto } from './dto/request/register-user.dto';
+import { Role } from '../roles/entities/role.entities';
+import { RolesService } from '../roles/roles.service';
 const bcrypt = require('bcrypt');
 
 @Injectable()
@@ -23,7 +25,9 @@ export class UserService {
   private verificationCodesRegister = new Map<string, RegisterUserDto>();
   constructor(
     @InjectRepository(User) private readonly userRepository: Repository<User>,
+    // @InjectRepository(Role) private readonly roleRepository: Repository<Role>,
     private mailService: MailService,
+    private rolesService: RolesService,
 
     @Inject(forwardRef(() => TasksService))
     private tasksService: TasksService
@@ -45,11 +49,11 @@ export class UserService {
 
     // Hash password
     const hashedPassword = await hashPasswordHelper(createUserDto.password);
-
+    const userRole = await this.rolesService.findRoleUser();
     // Tạo đối tượng user bằng Spread Operator
     const user: User = {
       ...createUserDto,
-      // role: 'USER',
+      role: userRole,
       password: hashedPassword, // Ghi đè password sau khi hash
 
     } as User;
@@ -60,20 +64,20 @@ export class UserService {
 
   // create user Admin
 
-  async createUserAdmin(createUserDto: CreateUserDto): Promise<Partial<UserResponseDto>> {
+  async createUserAdmin(registerAuthDto: RegisterUserDto): Promise<Partial<UserResponseDto>> {
 
-    const isTaken = await this.isEmailTaken(createUserDto.email);
+    const isTaken = await this.isEmailTaken(registerAuthDto.email);
     if (isTaken) {
-      throw new BadRequestException(`Email ${createUserDto.email} is already taken`);
+      throw new BadRequestException(`Email ${registerAuthDto.email} is already taken`);
     }
 
     // Hash password
-    const hashedPassword = await hashPasswordHelper(createUserDto.password);
-
+    const hashedPassword = await hashPasswordHelper(registerAuthDto.password);
+    const adminRole = await this.rolesService.findRoleAdmin();
     // Tạo đối tượng user bằng Spread Operator
     const user: User = {
-      ...createUserDto,
-      role: { name: 'admin' },
+      ...registerAuthDto,
+      role: adminRole,
       password: hashedPassword, // Ghi đè password sau khi hash
 
     } as User
@@ -173,11 +177,50 @@ export class UserService {
     return user
   }
 
-  updateUser(id: number, updateUserDto: UpdateUserDto): Promise<User> {
-
-    const user: User = { id, ...updateUserDto } as User;
-    return this.userRepository.save(user);
+  async updateUser(id: number, updateUserDto: UpdateUserDto): Promise<UserResponseDto> {
+    // Lấy thông tin user hiện tại từ database
+    const existingUser = await this.userRepository.findOne({ where: { id } });
+  
+    if (!existingUser) {
+      throw new Error('User not found'); // Xử lý lỗi nếu user không tồn tại
+    }
+  
+    // Kiểm tra nếu có mật khẩu mới (newPassword)
+    if (updateUserDto.newPassword) {
+      // Xác thực mật khẩu cũ (oldPassword)
+      if (!updateUserDto.oldPassword) {
+        throw new UnauthorizedException('Old password is required to set a new password');
+      }
+  
+      const isValidPassword = await compareHashPasswordHelper(
+        updateUserDto.oldPassword,
+        existingUser.password
+      );
+  
+      if (!isValidPassword) {
+        throw new UnauthorizedException('Invalid old password');
+      }
+  
+      // Mã hóa mật khẩu mới
+      updateUserDto.newPassword = await hashPasswordHelper(updateUserDto.newPassword);
+    }
+  
+    // Tạo đối tượng cập nhật
+    const updatedUser = {
+      ...existingUser,
+      ...updateUserDto,
+      password: updateUserDto.newPassword || existingUser.password, // Cập nhật mật khẩu mới nếu có, nếu không giữ mật khẩu cũ
+    };
+  
+    // Loại bỏ các trường không cần thiết
+    delete updatedUser.oldPassword;
+    delete updatedUser.newPassword;
+  
+    // Lưu thông tin user
+    const userDto= this.userRepository.save(updatedUser);
+    return plainToInstance(UserResponseDto, userDto, { excludeExtraneousValues: true });
   }
+  
 
 
   async removeUser(id: number): Promise<{ message: string }> {
@@ -252,7 +295,7 @@ export class UserService {
     // Tạo đối tượng user bằng Spread Operator
     const user: User = {
       ...userDto,
-      // role: 'USER',
+      // role: 1,
       password: hashedPassword, // Ghi đè password sau khi hash
 
     } as User;

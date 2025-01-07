@@ -4,12 +4,13 @@ import { UserService } from './users.service';
 import { User } from './entities/user.entities';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { TasksModule } from '../tasks/tasks.module';
+import { RolesModule } from '../roles/roles.module';
 // import { IsEmailUniqueConstraint } from './custom_validation/IsEmailUniqueConstraint';
 
 @Module({
-  imports: [forwardRef(() => TasksModule),TypeOrmModule.forFeature([User])],
+  imports: [RolesModule, forwardRef(() => TasksModule), TypeOrmModule.forFeature([User]),],
   controllers: [UsersController],
   providers: [UserService],
   exports: [UserService],
 })
-export class UsersModule {}
+export class UsersModule { }

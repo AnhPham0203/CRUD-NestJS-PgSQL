@@ -6,6 +6,7 @@ import {
   Param,
   Patch,
   Post,
+  Put,
   Req,
   UseGuards,
 } from '@nestjs/common';
@@ -16,6 +17,7 @@ import { Roles } from 'src/auth/decorators/roles.decorator';
 import { JwtAuthGuard } from 'src/auth/guards/jwt.guard';
 import { RolesGuard } from 'src/auth/guards/roles.guard';
 import { Role } from 'src/auth/enums/role.enum';
+import { RegisterUserDto } from './dto/request/register-user.dto';
 // import { Request } from 'express';
 
 @Controller('users')
@@ -29,17 +31,24 @@ export class UsersController {
    * POST http://localhost:3000/users
    */
   @Post()
-  async create(@Body() createUserDto: CreateUserDto) {
+  async createUser(@Body() createUserDto: CreateUserDto) {
     console.log('===create===', createUserDto);
 
     return await this.userService.createUser(createUserDto);
   }
 
   @Post('create-admin')
-  async createAdmin(@Body() createUserDto: CreateUserDto) {
-    console.log('===createAdmin===', createUserDto);
+  async createAdmin(@Body() registerAuthDto: RegisterUserDto) {
+    console.log('===createAdmin===', registerAuthDto);
 
-    return await this.userService.createUserAdmin(createUserDto);
+    return await this.userService.createUserAdmin(registerAuthDto);
+  }
+
+  @Post('update-admin')
+  async updateAdmin(@Body() registerAuthDto: RegisterUserDto) {
+    console.log('===createAdmin===', registerAuthDto);
+
+    return await this.userService.createUserAdmin(registerAuthDto);
   }
 
   @Get('admin')
@@ -88,7 +97,7 @@ export class UsersController {
    * so the API URL will be
    * PATCH http://localhost:3000/users/:id
    */
-  @Patch(':id')
+  @Put(':id')
   update(@Param('id') id: string, @Body() updateUserDto: UpdateUserDto) {
     return this.userService.updateUser(+id, updateUserDto);
   }

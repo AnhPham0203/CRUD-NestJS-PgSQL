@@ -7,24 +7,23 @@ import {
 } from 'class-validator';
 
 export class UpdateUserDto {
-  // @IsOptional()
-  // @IsString()
-  // readonly name?: string;
-
-  @IsOptional()
-  @IsInt()
-  @Min(0)
-  readonly age?: number;
-
 
   @IsOptional()
   @IsString()
-  readonly username?: string;
+  username?: string;
 
   @IsOptional()
   @IsString()
-  @IsEnum(['f', 'm', 'u'], { message: 'Gender must be one of f, m, or u.' })
-  readonly gender: string;
+  email?: string;
 
-  
+  @IsOptional()
+  @IsString()
+  oldPassword?: string; // Dùng để xác thực mật khẩu cũ
+
+  @IsOptional()
+  @IsString()
+  newPassword?: string; // Mật khẩu mới nếu muốn thay đổi
+
+
+
 }

@@ -3,7 +3,7 @@ import { IsEmail, IsNotEmpty, Matches } from "class-validator";
 const passwordRegEx =
 /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,20}$/;
 
-export class CreateAuthDto {
+export class LoginAuthDto {
    
 
       @IsNotEmpty()

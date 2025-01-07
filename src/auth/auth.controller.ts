@@ -1,6 +1,6 @@
 import { Controller, Post, Body, Get, Query, Res } from '@nestjs/common';
 import { AuthService } from './auth.service';
-import { CreateAuthDto } from './dto/create-auth.dto';
+import { LoginAuthDto } from './dto/login-auth.dto';
 import { MailService } from 'src/mail/mail.service';
 import { RegisterAuthDto } from './dto/register-auth.dto';
 import { CreateUserDto } from 'src/modules/users/dto/request/create-user.dto';
@@ -12,18 +12,18 @@ export class AuthController {
   constructor(
     private readonly authService: AuthService,
     private readonly mailService: MailService,
-  ) {}
+  ) { }
 
   @Post('login')
   login(
-    @Body() createAuthDto: CreateAuthDto,
+    @Body() loginAuthDto: LoginAuthDto,
     @Res({ passthrough: true }) res: Response,
   ) {
     // console.log("======", createAuthDto);
     // return "ok"
     return this.authService.signIn(
-      createAuthDto.email,
-      createAuthDto.password,
+      loginAuthDto.email,
+      loginAuthDto.password,
       res,
     );
   }

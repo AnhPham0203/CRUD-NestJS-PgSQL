@@ -10,7 +10,6 @@ import { MailService } from 'src/mail/mail.service';
 import { UserService } from 'src/modules/users/users.service';
 import { RegisterAuthDto } from './dto/register-auth.dto';
 import { User } from 'src/modules/users/entities/user.entities';
-import { CreateAuthDto } from './dto/create-auth.dto';
 import { CreateUserDto } from 'src/modules/users/dto/request/create-user.dto';
 import { RegisterUserDto } from 'src/modules/users/dto/request/register-user.dto';
 import { v4 as uuidv4 } from 'uuid';
@@ -23,7 +22,7 @@ export class AuthService {
     private userService: UserService,
     private jwtService: JwtService,
     private mailSevice: MailService,
-  ) {}
+  ) { }
 
   private verificationCodes = new Map<string, CreateUserDto>();
 
