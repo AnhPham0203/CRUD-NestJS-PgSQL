@@ -11,10 +11,9 @@ export class User {
   @PrimaryGeneratedColumn()
   id: number;
 
-  // @Column({ type: 'varchar', length: 30 })
-  // name: string;
+  
 
-  @Column({ type: 'varchar', length: 15 })
+  @Column({ type: 'varchar', length: 15, nullable: true }) 
   username: string;
 
   @Column({ type: 'varchar', length: 40 })
@@ -28,11 +27,7 @@ export class User {
   password: string;
 
   @Column({ type: 'enum', enum: ['m', 'f', 'u'] })
-  /**
-   * m - male
-   * f - female
-   * u - unspecified
-   */
+ 
   gender: string;
 
   // @Column({ type: 'enum', enum: Role, default: Role.USER })
@@ -50,7 +45,7 @@ export class User {
   @OneToMany(() => ReportUser, (report) => report.reportedUser)
   reportedReports: ReportUser[]; 
   
-  constructor() {
-    this.role = { id: 1, name: 'user' } as Role; // Giả sử id 1 là role 'user'
-  }
+  // constructor() {
+  //   this.role = { id: 1, name: 'user' } as Role; // Giả sử id 1 là role 'user'
+  // }
 }

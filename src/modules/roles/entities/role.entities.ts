@@ -20,11 +20,5 @@ export class Role {
   @JoinTable() // Tạo bảng trung gian role_permissions
   permissions: Permission[];
 
-  // @ManyToMany(() => Permission, (permission) => permission.roles)
-  // @JoinTable({
-  //   name: 'roles_permissions_permissions', // Name of the join table
-  //   joinColumn: { name: 'rolesId', referencedColumnName: 'id' },
-  //   inverseJoinColumn: { name: 'permissionsId', referencedColumnName: 'id' },
-  // })
-  // permissions: Permission[];
+ 
 }
