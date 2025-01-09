@@ -21,8 +21,8 @@ export class UserResponseDto {
   @Expose()
   gender: string;
 
-  @Expose()
-  role: string;
+  // @Expose()
+  // role: Role;
 
   // @Expose()
   // tasks: Task[];

@@ -1,3 +1,4 @@
+import { UserResponseDto } from 'src/modules/users/dto/response/user.responseDto';
 import { User } from 'src/modules/users/entities/user.entities';
 import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, CreateDateColumn } from 'typeorm';
 
@@ -14,6 +15,12 @@ export class ReportUser {
 
   @CreateDateColumn()
   createdAt: Date;
+
+  @CreateDateColumn()
+  resolveddAt: Date;
+
+  @ManyToOne(() => User, (user) => user.reportedReports, { eager: true })
+  resolvedBy: UserResponseDto;
 
   @ManyToOne(() => User, (user) => user.reportedReports, { eager: true })
   reportedUser: User;
