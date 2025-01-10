@@ -43,7 +43,5 @@ export class User {
   @OneToMany(() => ReportUser, (report) => report.reportedUser)
   reportedReports: ReportUser[]; 
   
-  // constructor() {
-  //   this.role = { id: 1, name: 'user' } as Role; // Giả sử id 1 là role 'user'
-  // }
+
 }

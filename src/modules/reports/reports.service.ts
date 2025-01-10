@@ -103,7 +103,7 @@ export class ReportsService {
     const reports = await this.reportUserRepository.find({
       relations: ['reportedUser', 'reporter'], // Join với các bảng liên quan (User)
     });
-    console.log("===reports===", reports);
+    // console.log("===reports===", reports);
 
     // Chuyển đổi đối tượng báo cáo thành DTO
     return reports.map((report) =>

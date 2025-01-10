@@ -1,4 +1,4 @@
-import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
+import { HttpException, HttpStatus, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Permission } from '../permissions/entities/permission.entities';
@@ -58,12 +58,19 @@ export class RolesService {
   }
 
   async delete(id: number): Promise<void> {
-    const users = await this.usersRepository.find({ where: { role: { id } }, relations: ['roles', 'roles.permissions'] });
-    // Gán role của mỗi user thành null
-    for (const user of users) {
-      user.role = null; // Đặt role của user thành null
-      await this.usersRepository.save(user); // Lưu lại
+    const role = await this.roleRepository.findOne({ where: { id } });
+    if (!role) {
+      throw new NotFoundException(`Role with id ${id} not found`);
     }
+
+    // Cập nhật các user liên kết với role này
+    await this.usersRepository
+      .createQueryBuilder()
+      .update(User)
+      .set({ role: null })
+      .where('roleId = :id', { id })
+      .execute();
+    await this.roleRepository.delete(id);
   }
 
 }

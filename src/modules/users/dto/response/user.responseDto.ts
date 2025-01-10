@@ -6,8 +6,6 @@ export class UserResponseDto {
   @Expose()
   id: number;
 
-  // @Expose()
-  // name: string;
 
   @Expose()
   username: string;
@@ -21,8 +19,8 @@ export class UserResponseDto {
   @Expose()
   gender: string;
 
-  // @Expose()
-  // role: Role;
+  @Expose()
+  role: string;
 
   // @Expose()
   // tasks: Task[];

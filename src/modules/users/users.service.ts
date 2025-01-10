@@ -98,7 +98,7 @@ export class UserService {
       UserResponseDto,
       users.map(user => ({
         ...user,
-        role: user.role.name, // Lấy tên của role
+        role: user.role ? user.role.name : null, // Xử lý khi role là null
       })),
       { excludeExtraneousValues: true },
     );
@@ -180,47 +180,47 @@ export class UserService {
   async updateUser(id: number, updateUserDto: UpdateUserDto): Promise<UserResponseDto> {
     // Lấy thông tin user hiện tại từ database
     const existingUser = await this.userRepository.findOne({ where: { id } });
-  
+
     if (!existingUser) {
       throw new Error('User not found'); // Xử lý lỗi nếu user không tồn tại
     }
-  
+
     // Kiểm tra nếu có mật khẩu mới (newPassword)
     if (updateUserDto.newPassword) {
       // Xác thực mật khẩu cũ (oldPassword)
       if (!updateUserDto.oldPassword) {
         throw new UnauthorizedException('Old password is required to set a new password');
       }
-  
+
       const isValidPassword = await compareHashPasswordHelper(
         updateUserDto.oldPassword,
         existingUser.password
       );
-  
+
       if (!isValidPassword) {
         throw new UnauthorizedException('Invalid old password');
       }
-  
+
       // Mã hóa mật khẩu mới
       updateUserDto.newPassword = await hashPasswordHelper(updateUserDto.newPassword);
     }
-  
+
     // Tạo đối tượng cập nhật
     const updatedUser = {
       ...existingUser,
       ...updateUserDto,
       password: updateUserDto.newPassword || existingUser.password, // Cập nhật mật khẩu mới nếu có, nếu không giữ mật khẩu cũ
     };
-  
+
     // Loại bỏ các trường không cần thiết
     delete updatedUser.oldPassword;
     delete updatedUser.newPassword;
-  
+
     // Lưu thông tin user
-    const userDto= this.userRepository.save(updatedUser);
+    const userDto = this.userRepository.save(updatedUser);
     return plainToInstance(UserResponseDto, userDto, { excludeExtraneousValues: true });
   }
-  
+
 
 
   async removeUser(id: number): Promise<{ message: string }> {

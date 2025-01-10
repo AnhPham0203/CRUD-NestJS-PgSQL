@@ -19,13 +19,20 @@ export class RolesGuard implements CanActivate {
     const request = context.switchToHttp().getRequest();
 
     // Lấy token từ header Authorization
-    const authorization = request.headers['authorization'];
-    if (!authorization || !authorization.startsWith('Bearer ')) {
-      console.log('Authorization header is missing or invalid.');
+    // const authorization = request.headers['authorization'];
+    // if (!authorization || !authorization.startsWith('Bearer ')) {
+    //   console.log('Authorization header is missing or invalid.');
+    //   return false;
+    // }
+
+    // const token = authorization.split(' ')[1];
+
+    const token = request.cookies['access_token']; // Token được lưu trong cookie dưới tên 'access_token'
+
+    if (!token) {
+      console.log('Token is missing.');
       return false;
     }
-
-    const token = authorization.split(' ')[1];
 
 
     try {

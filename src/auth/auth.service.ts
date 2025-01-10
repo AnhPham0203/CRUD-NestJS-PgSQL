@@ -15,6 +15,8 @@ import { RegisterUserDto } from 'src/modules/users/dto/request/register-user.dto
 import { v4 as uuidv4 } from 'uuid';
 import { Response } from 'express';
 import { Res } from '@nestjs/common';
+import { plainToInstance } from 'class-transformer';
+import { UserResponseDto } from 'src/modules/users/dto/response/user.responseDto';
 
 @Injectable()
 export class AuthService {
@@ -50,7 +52,7 @@ export class AuthService {
     email: string,
     pass: string,
     @Res({ passthrough: true }) res: Response,
-  ): Promise<any> {
+  ): Promise<UserResponseDto> {
     const user = await this.userService.findByEmail(email);
 
     if (!user) {
@@ -74,10 +76,11 @@ export class AuthService {
       sameSite: 'none', // Giới hạn cookie chỉ được gửi trên cùng một site
       maxAge: 3600000, // Thời gian tồn tại của cookie (1 giờ)
     });
-    return {
-      // access_token: await this.jwtService.signAsync(payload),
-      user
-    };
+    const userDto = plainToInstance(UserResponseDto, {
+      ...user,
+      role: user.role?.name, // Ghi đè thuộc tính role nếu cần
+    }, { excludeExtraneousValues: true });
+    return userDto
   }
 
   async sendVerifyEmail(email: string) {

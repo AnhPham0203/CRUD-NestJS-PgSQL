@@ -22,7 +22,7 @@ import { RegisterUserDto } from './dto/request/register-user.dto';
 
 @Controller('users')
 export class UsersController {
-  constructor(private readonly userService: UserService) {}
+  constructor(private readonly userService: UserService) { }
 
   /**
    * Post decorator represents method of request as we have used post decorator the method
@@ -52,7 +52,7 @@ export class UsersController {
   }
 
   @Get('admin')
-  // @UseGuards(JwtAuthGuard, RolesGuard)
+  // @UseGuards( RolesGuard)
   // @Roles(Role.ADMIN) // Chỉ vai trò 'admin' mới truy cập được
   getAdminData() {
     return this.userService.findAllAdminUsers();
