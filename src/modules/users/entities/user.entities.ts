@@ -17,19 +17,18 @@ export class User {
   @Column({ type: 'varchar', length: 40 })
   email: string;
 
-  @Column({ type: 'int' })
+  @Column({ type: 'int' , nullable: true})
   age: number;
 
   @Column({ type: 'varchar' })
   // @Exclude()
   password: string;
 
-  @Column({ type: 'enum', enum: ['m', 'f', 'u'] })
- 
+  @Column({ type: 'enum', enum: ['m', 'f', 'u'], nullable: true })
   gender: string;
 
-  // @Column({ type: 'enum', enum: Role, default: Role.USER })
-  // role: string;
+  @Column({ nullable: true }) // Avatar không bắt buộc
+  avatar: string;
 
   @ManyToOne(() => Role, (role) => role.users, { eager: true })
   role: Role;

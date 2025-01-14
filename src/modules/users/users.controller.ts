@@ -20,6 +20,8 @@ import { Role } from 'src/auth/enums/role.enum';
 import { RegisterUserDto } from './dto/request/register-user.dto';
 // import { Request } from 'express';
 
+@UseGuards(JwtAuthGuard, RolesGuard)
+@Roles(Role.ADMIN, Role.MANAGER)
 @Controller('users')
 export class UsersController {
   constructor(private readonly userService: UserService) { }
@@ -52,11 +54,10 @@ export class UsersController {
   }
 
   @Get('admin')
-  // @UseGuards( RolesGuard)
-  // @Roles(Role.ADMIN) // Chỉ vai trò 'admin' mới truy cập được
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(Role.ADMIN, Role.MANAGER)
   getAdminData() {
     return this.userService.findAllAdminUsers();
-    return { message: 'This is admin data' };
   }
 
   @Get('user')

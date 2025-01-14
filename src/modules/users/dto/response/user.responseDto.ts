@@ -22,6 +22,6 @@ export class UserResponseDto {
   @Expose()
   role: string;
 
-  // @Expose()
-  // tasks: Task[];
+  @Expose()
+  avatar: string;
 }

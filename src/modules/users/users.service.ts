@@ -1,5 +1,5 @@
 import { TasksService } from './../tasks/tasks.service';
-import { BadRequestException, forwardRef, HttpException, HttpStatus, Inject, Injectable, NotFoundException, UnauthorizedException } from '@nestjs/common';
+import { BadRequestException, forwardRef, HttpException, HttpStatus, Inject, Injectable, Logger, NotFoundException, UnauthorizedException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { User } from './entities/user.entities';
@@ -23,6 +23,8 @@ export class UserService {
    */
   // private verificationCodes = new Map<string, CreateUserDto>();
   private verificationCodesRegister = new Map<string, RegisterUserDto>();
+
+  private readonly logger = new Logger(UserService.name)
   constructor(
     @InjectRepository(User) private readonly userRepository: Repository<User>,
     // @InjectRepository(Role) private readonly roleRepository: Repository<Role>,
@@ -30,7 +32,8 @@ export class UserService {
     private rolesService: RolesService,
 
     @Inject(forwardRef(() => TasksService))
-    private tasksService: TasksService
+    private tasksService: TasksService,
+
   ) { }
 
 
@@ -177,7 +180,7 @@ export class UserService {
     return user
   }
 
-  async updateUser(id: number, updateUserDto: UpdateUserDto): Promise<UserResponseDto> {
+  async updateUser(id: number, updateUserDto: UpdateUserDto): Promise<string> {
     // Lấy thông tin user hiện tại từ database
     const existingUser = await this.userRepository.findOne({ where: { id } });
 
@@ -187,19 +190,7 @@ export class UserService {
 
     // Kiểm tra nếu có mật khẩu mới (newPassword)
     if (updateUserDto.newPassword) {
-      // Xác thực mật khẩu cũ (oldPassword)
-      if (!updateUserDto.oldPassword) {
-        throw new UnauthorizedException('Old password is required to set a new password');
-      }
 
-      const isValidPassword = await compareHashPasswordHelper(
-        updateUserDto.oldPassword,
-        existingUser.password
-      );
-
-      if (!isValidPassword) {
-        throw new UnauthorizedException('Invalid old password');
-      }
 
       // Mã hóa mật khẩu mới
       updateUserDto.newPassword = await hashPasswordHelper(updateUserDto.newPassword);
@@ -213,17 +204,17 @@ export class UserService {
     };
 
     // Loại bỏ các trường không cần thiết
-    delete updatedUser.oldPassword;
+    // delete updatedUser.oldPassword;
     delete updatedUser.newPassword;
 
     // Lưu thông tin user
     const userDto = this.userRepository.save(updatedUser);
-    return plainToInstance(UserResponseDto, userDto, { excludeExtraneousValues: true });
+    return 'User has been updated successfully'
   }
 
 
 
-  async removeUser(id: number): Promise<{ message: string }> {
+  async removeUser(id: number): Promise<string> {
     const user = await this.userRepository.findOne({ where: { id }, relations: ['tasks'] })
     if (!user) {
       throw new HttpException(
@@ -239,7 +230,7 @@ export class UserService {
 
     await this.userRepository.delete(id);
 
-    return { message: `User with id ${id} deleted successfully.` };
+    return `User with id ${id} deleted successfully.`
   }
 
 
@@ -304,6 +295,19 @@ export class UserService {
     this.verificationCodesRegister.delete(code);
 
     return 'Email verified. You can now login.';
+  }
+
+  async updateUserAvatar(userId: number, avatarPath: string): Promise<string> {
+    const user = await this.userRepository.findOne({ where: { id: userId } });
+    if (!user) {
+      throw new Error('User not found');
+    }
+    user.avatar = avatarPath;
+    await this.userRepository.save(user);
+    console.log("log==", avatarPath);
+
+    // this.logger.log("logger==", avatarPath)
+    return avatarPath
   }
 
 }
